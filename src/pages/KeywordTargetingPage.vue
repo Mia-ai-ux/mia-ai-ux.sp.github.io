@@ -534,15 +534,15 @@ function onNext() { router.push(getNextPath('/keyword-targeting')) }
 .page-layout {
   display: flex;
   justify-content: center;
-  min-height: calc(100vh - 60px);
+  min-height: calc(100vh - var(--nav-height, 60px));
   width: 100%;
 }
 
 .page-center {
   display: flex;
   align-items: flex-start;
-  gap: 40px;
-  width: 70vw;
+  gap: var(--sidebar-gap, 40px);
+  width: var(--content-width, 70vw);
   max-width: 100%;
   box-sizing: border-box;
   padding: 40px 0 0;
@@ -556,9 +556,9 @@ function onNext() { router.push(getNextPath('/keyword-targeting')) }
 }
 
 .page-title {
-  font-size: 2em;
+  font-size: var(--text-3xl, 28px);
   font-weight: 700;
-  color: #111;
+  color: var(--text-main);
   margin: 0 0 16px;
   padding: 0;
   display: flex;
@@ -576,16 +576,16 @@ function onNext() { router.push(getNextPath('/keyword-targeting')) }
   flex: 1;
   min-width: 0;
   margin: 0;
-  padding-bottom: 72px;
+  padding-bottom: 80px;
 }
 
 .kt-shell {
   display: flex;
   gap: 0;
   min-height: 520px;
-  background: #fff;
-  border: 1px solid #e2e8f0;
-  border-radius: 8px;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-card);
   overflow: hidden;
 }
 
@@ -594,7 +594,7 @@ function onNext() { router.push(getNextPath('/keyword-targeting')) }
   min-width: 0;
   display: flex;
   flex-direction: column;
-  border-right: 1px solid #e2e8f0;
+  border-right: 1px solid var(--border);
 }
 
 .kt-tabs-row {
@@ -603,7 +603,7 @@ function onNext() { router.push(getNextPath('/keyword-targeting')) }
   justify-content: space-between;
   gap: 12px;
   padding: 12px 16px;
-  border-bottom: 1px solid #e2e8f0;
+  border-bottom: 1px solid var(--border);
   flex-wrap: wrap;
 }
 
@@ -656,7 +656,7 @@ function onNext() { router.push(getNextPath('/keyword-targeting')) }
   align-items: center;
   gap: 20px 24px;
   padding: 12px 16px;
-  border-bottom: 1px solid #e2e8f0;
+  border-bottom: 1px solid var(--border);
   background: #fafbfc;
 }
 
@@ -807,7 +807,7 @@ function onNext() { router.push(getNextPath('/keyword-targeting')) }
 
 .data-table thead tr {
   background: #f8f9fb;
-  border-bottom: 1px solid #e2e8f0;
+  border-bottom: 1px solid var(--border);
 }
 
 .data-table th {
@@ -918,7 +918,7 @@ function onNext() { router.push(getNextPath('/keyword-targeting')) }
   min-width: 32px;
   height: 32px;
   padding: 0 8px;
-  border: 1px solid #e2e8f0;
+  border: 1px solid var(--border);
   background: #fff;
   border-radius: 4px;
   font-size: 13px;
@@ -940,7 +940,7 @@ function onNext() { router.push(getNextPath('/keyword-targeting')) }
 .page-size {
   height: 32px;
   padding: 0 8px;
-  border: 1px solid #e2e8f0;
+  border: 1px solid var(--border);
   border-radius: 4px;
   font-size: 13px;
 }
@@ -1002,7 +1002,7 @@ function onNext() { router.push(getNextPath('/keyword-targeting')) }
   align-items: center;
   justify-content: space-between;
   padding: 12px 16px;
-  border-bottom: 1px solid #e2e8f0;
+  border-bottom: 1px solid var(--border);
   min-height: 49px;
 }
 

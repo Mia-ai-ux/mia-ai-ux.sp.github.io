@@ -39,15 +39,15 @@ function onSubmit() {
 .page-layout {
   display: flex;
   justify-content: center;
-  min-height: calc(100vh - 60px);
+  min-height: calc(100vh - var(--nav-height, 60px));
   width: 100%;
 }
 
 .page-center {
   display: flex;
   align-items: flex-start;
-  gap: 40px;
-  width: 70vw;
+  gap: var(--sidebar-gap, 40px);
+  width: var(--content-width, 70vw);
   max-width: 100%;
   box-sizing: border-box;
   padding: 40px 0 0;
@@ -61,9 +61,9 @@ function onSubmit() {
 }
 
 .page-title {
-  font-size: 2em;
+  font-size: var(--text-3xl, 28px);
   font-weight: 700;
-  color: #111;
+  color: var(--text-main);
   margin: 0 0 20px;
   padding: 0;
 }
@@ -72,17 +72,17 @@ function onSubmit() {
   flex: 1;
   min-width: 0;
   margin: 0;
-  padding-bottom: 72px;
+  padding-bottom: 80px;
   display: flex;
   flex-direction: column;
   gap: 16px;
 }
 
 .placeholder-card {
-  background: #fff;
-  border-radius: 12px;
-  padding: 40px 32px;
-  color: #94a3b8;
-  font-size: 16px;
+  background: var(--bg-card);
+  border-radius: var(--radius-card);
+  padding: 28px 32px;
+  color: var(--text-sub);
+  font-size: var(--text-base, 14px);
 }
 </style>

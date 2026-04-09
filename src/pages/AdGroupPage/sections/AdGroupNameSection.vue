@@ -19,17 +19,17 @@ const { form } = storeToRefs(useCampaignStore())
 .card {
   background: var(--bg-card);
   border-radius: var(--radius-card);
-  padding: 32px;
+  padding: 28px 32px;
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 0;
 }
 
 h2 {
-  margin: 0;
-  font-size: 28px;
+  margin: 0 0 24px;
+  font-size: var(--text-2xl, 22px);
   font-weight: 600;
-  color: #272b36;
+  color: var(--text-main);
 }
 
 .input-wrap {

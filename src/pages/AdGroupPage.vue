@@ -28,7 +28,7 @@ const steps = [
 <style scoped>
 .page-layout {
   display: flex;
-  min-height: calc(100vh - 50px);
+  min-height: calc(100vh - var(--nav-height, 60px));
 }
 
 .placeholder-content {
@@ -40,17 +40,18 @@ const steps = [
 }
 
 .placeholder-card {
-  background: #fff;
-  border-radius: 4px;
-  padding: 48px 40px;
+  background: var(--bg-card);
+  border-radius: var(--radius-card);
+  padding: 28px 32px;
   width: 640px;
+  max-width: 100%;
   text-align: center;
-  color: #737d8c;
+  color: var(--text-sub);
 }
 
 .placeholder-card h2 {
   margin: 0 0 12px;
-  font-size: 28px;
-  color: #12171f;
+  font-size: var(--text-3xl, 28px);
+  color: var(--text-main);
 }
 </style>

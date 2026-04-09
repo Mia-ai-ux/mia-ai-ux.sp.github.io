@@ -365,15 +365,15 @@ function onNext()   { router.push(getNextPath('/negative-targeting')) }
 .page-layout {
   display: flex;
   justify-content: center;
-  min-height: calc(100vh - 60px);
+  min-height: calc(100vh - var(--nav-height, 60px));
   width: 100%;
 }
 
 .page-center {
   display: flex;
   align-items: flex-start;
-  gap: 40px;
-  width: 70vw;
+  gap: var(--sidebar-gap, 40px);
+  width: var(--content-width, 70vw);
   max-width: 100%;
   box-sizing: border-box;
   padding: 40px 0 0;
@@ -387,9 +387,9 @@ function onNext()   { router.push(getNextPath('/negative-targeting')) }
 }
 
 .page-title {
-  font-size: 2em;
+  font-size: var(--text-3xl, 28px);
   font-weight: 700;
-  color: #111;
+  color: var(--text-main);
   margin: 0 0 20px;
   padding: 0;
 }
@@ -398,7 +398,7 @@ function onNext()   { router.push(getNextPath('/negative-targeting')) }
   flex: 1;
   min-width: 0;
   margin: 0;
-  padding-bottom: 72px;
+  padding-bottom: 80px;
   display: flex;
   flex-direction: column;
   gap: 16px;
@@ -406,9 +406,9 @@ function onNext()   { router.push(getNextPath('/negative-targeting')) }
 
 /* ── Card ── */
 .card {
-  background: #fff;
-  border-radius: 12px;
-  padding: 32px;
+  background: var(--bg-card);
+  border-radius: var(--radius-card);
+  padding: 28px 32px;
   display: flex;
   flex-direction: column;
   gap: 20px;
@@ -423,9 +423,9 @@ function onNext()   { router.push(getNextPath('/negative-targeting')) }
 }
 
 .section-title {
-  font-size: 22px;
+  font-size: var(--text-2xl, 22px);
   font-weight: 600;
-  color: #272b36;
+  color: var(--text-main);
   margin: 0;
   display: flex;
   align-items: baseline;
@@ -436,7 +436,7 @@ function onNext()   { router.push(getNextPath('/negative-targeting')) }
 .remove-all-btn {
   background: none;
   border: none;
-  color: #1876ff;
+  color: var(--primary);
   font-size: 15px;
   font-weight: 500;
   cursor: pointer;
@@ -617,6 +617,9 @@ function onNext()   { router.push(getNextPath('/negative-targeting')) }
 .ep-card { gap: 16px; }
 
 .ep-body {
+  /* 商品 / 品牌列表卡片与缩略图底：与设计稿一致 */
+  --ep-list-surface: #f8f8f8;
+  --ep-list-hover: #f0f0f0;
   display: flex;
   gap: 0;
   min-height: 400px;
@@ -690,12 +693,12 @@ function onNext()   { router.push(getNextPath('/negative-targeting')) }
   margin: 12px 14px 0;
   border-radius: 4px;
   border: 1px solid transparent;
-  background: var(--chip-bg);
+  background: var(--ep-list-surface);
   cursor: pointer;
   transition: border-color 0.15s, background 0.15s;
 }
 .ep-product-row:first-child { margin-top: 12px; }
-.ep-product-row:hover { background: #eef1f5; }
+.ep-product-row:hover { background: var(--ep-list-hover); }
 .ep-product-row.selected {
   background: #fff;
   border-color: var(--selected-border);
@@ -751,7 +754,7 @@ function onNext()   { router.push(getNextPath('/negative-targeting')) }
   margin: 12px 14px 0;
   border-radius: 4px;
   border: 1px solid transparent;
-  background: var(--chip-bg);
+  background: var(--ep-list-surface);
 }
 
 /* Product card shared */
@@ -770,13 +773,13 @@ function onNext()   { router.push(getNextPath('/negative-targeting')) }
   flex-shrink: 0;
   border-radius: 4px;
   overflow: hidden;
-  background: #f5f5f5;
+  background: var(--ep-list-surface);
 }
 
 .ep-thumb-bg {
   position: absolute;
   inset: 0;
-  background: #f0f0f0;
+  background: var(--ep-list-surface);
 }
 
 .ep-thumb-img {
@@ -886,8 +889,12 @@ function onNext()   { router.push(getNextPath('/negative-targeting')) }
   margin: 12px 14px 0;
   border-radius: 4px;
   border: 1px solid transparent;
-  background: var(--chip-bg);
+  background: var(--ep-list-surface);
   transition: border-color 0.15s, background 0.15s;
+}
+
+.eb-brand-row:hover:not(.selected) {
+  background: var(--ep-list-hover);
 }
 
 .eb-brand-row.selected {
@@ -924,7 +931,7 @@ function onNext()   { router.push(getNextPath('/negative-targeting')) }
   margin: 12px 14px 0;
   border-radius: 4px;
   border: 1px solid transparent;
-  background: var(--chip-bg);
+  background: var(--ep-list-surface);
 }
 
 .eb-close-btn {

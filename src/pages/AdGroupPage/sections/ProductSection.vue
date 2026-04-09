@@ -1,6 +1,6 @@
 <template>
   <section id="section-product" class="card">
-    <div class="header">
+    <div class="title-group">
       <h2>Product</h2>
       <p>Select the products you want to advertise for this ad group</p>
     </div>
@@ -43,22 +43,22 @@ function removeProduct(i) {
 .card {
   background: var(--bg-card);
   border-radius: var(--radius-card);
-  padding: 32px;
+  padding: 28px 32px;
   display: flex;
   flex-direction: column;
   gap: 20px;
 }
 
-.header h2 {
-  margin: 0 0 4px;
-  font-size: 28px;
+.title-group h2 {
+  margin: 0;
+  font-size: var(--text-2xl, 22px);
   font-weight: 600;
-  color: #272b36;
+  color: var(--text-main);
 }
 
-.header p {
-  margin: 0;
-  font-size: 17px;
+.title-group p {
+  margin: 4px 0 0;
+  font-size: var(--text-base, 14px);
   color: var(--text-sub);
 }
 
@@ -75,7 +75,7 @@ function removeProduct(i) {
   background: var(--control-bg);
   border-radius: 3px;
   padding: 8px 12px;
-  font-size: 18px;
+  font-size: var(--text-base, 14px);
 }
 
 .remove-btn {
@@ -101,7 +101,7 @@ function removeProduct(i) {
   border-radius: 44px;
   height: 44px;
   padding: 0 20px 0 7px;
-  font-size: 18px;
+  font-size: var(--text-base, 14px);
   font-weight: 500;
   color: #424244;
   cursor: pointer;
