@@ -1,0 +1,96 @@
+import { defineStore } from 'pinia'
+import { ref } from 'vue'
+
+export const useCampaignStore = defineStore('campaign', () => {
+  const now = new Date()
+  const pad = (n) => String(n).padStart(2, '0')
+  const dateStr = `${now.getMonth() + 1}/${now.getDate()}/${now.getFullYear()} ${pad(now.getHours())}:${pad(now.getMinutes())}:${pad(now.getSeconds())}`
+  const todayDate = `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())}`
+
+  const form = ref({
+    // ── Step 1: Campaign ──────────────────────────
+    siteType: 'amazon_and_beyond',
+    campaignName: `Campaign-${dateStr}`,
+    dailyBudget: 20.0,
+    scheduleType: 'continuous',
+    startTime: todayDate,
+    endTime: '',
+    portfolio: '',
+    bidMode: 'fixed',
+    bidTop: 0,
+    bidRest: 0,
+    bidProduct: 0,
+    audienceMode: 'don_t_increase',
+    targeting: 'auto',
+
+    // ── Step 2: Ad Group ──────────────────────────
+    adGroupName: `Ad group-${dateStr}`,
+    adGroupBid: 7.5,
+
+    // products selected
+    products: [],
+
+    // Automatic targeting – Set bids by targeting group
+    autoTargetBidMode: 'by_group',   // 'by_group' | 'default'
+    autoGroups: {
+      closeMatch:   { enabled: true,  bid: 0 },
+      looseMatch:   { enabled: true,  bid: 0 },
+      substitutes:  { enabled: true,  bid: 0 },
+      complements:  { enabled: true,  bid: 0 }
+    },
+    autoDefaultBid: 0,
+
+    // Manual targeting
+    manualTargetType: 'keyword',   // 'keyword' | 'product'
+
+    // Keyword targeting step (UI state)
+    keywordTargetTab: 'amazon',    // 'amazon' | 'library' | 'campaigns' | 'manual'
+    keywordTargetingDefaultBid: 0.07,
+    keywordTargetingMatchTypes: { exact: true, broad: false, phrase: false },
+    keywordSelectedCampaignId: '',
+    keywordSelectedAdGroupId: '',
+
+    // Negative targeting
+    negativeKeywords: [],    // [{ id, keyword, matchType }]
+    excludedProducts: [],    // [{ id, image, title, rating, reviews, originalPrice, price, asin }]
+    excludedBrands: [],      // [{ id, name }]
+
+    // Keyword targeting — added keywords (right panel)
+    // { id, text, subtitle?, matchType, is?, ir?, suggestBid, suggestRange, bid, checked }
+    keywords: [],
+
+    // Pool for targeting library tab (mock)
+    libraryKeywords: [
+      { id: 'lib-1', text: 'ceramic space heater', subtitle: 'Ceramic heater', is: '12.1%', ir: 3, matchType: 'Exact', suggestBid: '$1.04', suggestRange: '$0.80–$1.35' },
+      { id: 'lib-2', text: 'portable electric heater', subtitle: 'Portable heater', is: '11.4%', ir: 4, matchType: 'Exact', suggestBid: '$0.92', suggestRange: '$0.70–$1.12' }
+    ],
+
+    // Product targeting step
+    productTargetMode: 'category',           // 'category' | 'product'
+    productCategoryTab: 'suggested',         // 'suggested' | 'search' | 'campaigns'
+    productProductTab: 'suggested',          // 'suggested' | 'library' | 'campaigns' | 'manual'
+    productTargetingDefaultBid: 0.02,
+    productDeliveryType: { exact: true, expanded: false },
+    productAsinTheme: 'similar',
+    productSelectedCampaignId: '',
+    productSelectedAdGroupId: '',
+    // Added targets (right panel): { id, kind, title, subtitle?, path?, asin?, image?, deliveryType, suggestBid, suggestRange, bid, checked }
+    productTargets: [],
+    // Mock pool for product library tab
+    libraryProductAsins: [
+      { id: 'lp1', asin: 'B0C5CV8CTW', title: 'Dreo Ceramic Heater', image: 'https://m.media-amazon.com/images/I/81G+4gzszVL._AC_SY879_.jpg', suggestBid: '$0.89', suggestRange: '$0.65–$1.05' },
+      { id: 'lp2', asin: 'B09XK2DTVP', title: 'Vornado MVH Vortex Heater', image: 'https://m.media-amazon.com/images/I/71pB9RvWyRL._AC_SL1500_.jpg', suggestBid: '$0.76', suggestRange: '$0.55–$0.94' }
+    ]
+  })
+
+  function reset() {
+    form.value.siteType = 'amazon_and_beyond'
+    form.value.bidMode = 'fixed'
+    form.value.targeting = 'auto'
+    form.value.scheduleType = 'continuous'
+    form.value.autoTargetBidMode = 'by_group'
+    form.value.manualTargetType = 'keyword'
+  }
+
+  return { form, reset }
+})
