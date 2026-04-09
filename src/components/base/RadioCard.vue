@@ -38,20 +38,34 @@ const selected = computed(() => props.modelValue === props.value)
   padding: 16px;
   border: 1.5px solid var(--border);
   cursor: pointer;
-  transition: border-color 0.15s, background 0.15s, box-shadow 0.15s;
+  transform: translateY(0);
+  transition:
+    border-color 0.22s cubic-bezier(0.4, 0, 0.2, 1),
+    background 0.22s cubic-bezier(0.4, 0, 0.2, 1),
+    box-shadow 0.32s cubic-bezier(0.4, 0, 0.2, 1),
+    transform 0.32s cubic-bezier(0.4, 0, 0.2, 1);
   width: 100%;
 }
 
 .radio-card:hover:not(.selected) {
-  border-color: var(--border-strong);
-  box-shadow: var(--shadow-sm);
+  border-color: transparent;
+  box-shadow: var(--shadow-card-hover);
+  transform: translateY(-2px);
 }
 
-/* 选中：蓝色边框 + 极淡蓝色背景，区分度明显 */
+/* 选中：蓝色边框 + 更浅的蓝底（低饱和、高明度） */
 .radio-card.selected {
-  background: var(--primary-light, hsl(217, 100%, 97%));
+  background: hsl(217 58% 97.8%);
   border-color: var(--primary);
-  box-shadow: 0 0 0 3px var(--primary-border, hsl(217, 100%, 85%)) / 0.3;
+  box-shadow: none;
+}
+
+.radio-card :deep(.option-title) {
+  transition: color 0.2s ease;
+}
+
+.radio-card.selected :deep(.option-title) {
+  color: var(--primary);
 }
 
 .radio-dot {

@@ -1,10 +1,9 @@
 import { computed } from 'vue'
 import { storeToRefs } from 'pinia'
 import { useCampaignStore } from '@/stores/campaign'
-import { CalendarDays, FolderOpen, Tag, Package, CircleMinus, Crosshair } from 'lucide-vue-next'
 
 const campaignSubItems = [
-  { label: 'Campaign settings',  anchorId: 'section-campaign-settings' },
+  { label: 'Settings',           anchorId: 'section-campaign-settings' },
   { label: 'Sites',              anchorId: 'section-sites' },
   { label: 'Bidding strategy',   anchorId: 'section-bidding-strategy' },
   { label: 'Targeting',          anchorId: 'section-targeting' }
@@ -41,28 +40,28 @@ export function useFlowSteps() {
     if (isAuto) {
       // Automatic targeting → 4 steps
       return [
-        { step: 1, label: 'Campaign Plan',      path: '/campaign',            icon: CalendarDays, subItems: campaignSubItems },
-        { step: 2, label: 'Ad Group',           path: '/ad-group/auto',       icon: FolderOpen,   subItems: autoAdGroupSubItems },
-        { step: 3, label: 'Negative targeting', path: '/negative-targeting',  icon: CircleMinus,  subItems: negativeSubItems },
-        { step: 4, label: 'Targeting',          path: '/ad',                  icon: Crosshair }
+        { step: 1, label: 'Campaign Plan',      path: '/campaign',            subItems: campaignSubItems },
+        { step: 2, label: 'Ad Group',           path: '/ad-group/auto',       subItems: autoAdGroupSubItems },
+        { step: 3, label: 'Negative targeting', path: '/negative-targeting',  subItems: negativeSubItems },
+        { step: 4, label: 'Targeting',          path: '/ad' }
       ]
     } else if (isKeyword) {
       // Manual + Keyword targeting → 5 steps
       return [
-        { step: 1, label: 'Campaign Plan',      path: '/campaign',            icon: CalendarDays, subItems: campaignSubItems },
-        { step: 2, label: 'Ad Group',           path: '/ad-group/manual',     icon: FolderOpen,   subItems: manualAdGroupSubItems },
-        { step: 3, label: 'Keyword targeting',  path: '/keyword-targeting',   icon: Tag },
-        { step: 4, label: 'Negative targeting', path: '/negative-targeting',  icon: CircleMinus,  subItems: negativeSubItems },
-        { step: 5, label: 'Targeting',          path: '/ad',                  icon: Crosshair }
+        { step: 1, label: 'Campaign Plan',      path: '/campaign',            subItems: campaignSubItems },
+        { step: 2, label: 'Ad Group',           path: '/ad-group/manual',     subItems: manualAdGroupSubItems },
+        { step: 3, label: 'Keyword targeting',  path: '/keyword-targeting' },
+        { step: 4, label: 'Negative targeting', path: '/negative-targeting',  subItems: negativeSubItems },
+        { step: 5, label: 'Targeting',          path: '/ad' }
       ]
     } else {
       // Manual + Product targeting → 5 steps
       return [
-        { step: 1, label: 'Campaign Plan',      path: '/campaign',            icon: CalendarDays, subItems: campaignSubItems },
-        { step: 2, label: 'Ad Group',           path: '/ad-group/manual',     icon: FolderOpen,   subItems: manualAdGroupSubItems },
-        { step: 3, label: 'Product targeting',  path: '/product-targeting',   icon: Package },
-        { step: 4, label: 'Negative targeting', path: '/negative-targeting',  icon: CircleMinus,  subItems: negativeSubItems },
-        { step: 5, label: 'Targeting',          path: '/ad',                  icon: Crosshair }
+        { step: 1, label: 'Campaign Plan',      path: '/campaign',            subItems: campaignSubItems },
+        { step: 2, label: 'Ad Group',           path: '/ad-group/manual',     subItems: manualAdGroupSubItems },
+        { step: 3, label: 'Product targeting',  path: '/product-targeting' },
+        { step: 4, label: 'Negative targeting', path: '/negative-targeting',  subItems: negativeSubItems },
+        { step: 5, label: 'Targeting',          path: '/ad' }
       ]
     }
   })

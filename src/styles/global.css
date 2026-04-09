@@ -33,10 +33,10 @@
   --text-sub:       var(--gray-500);
   --text-hint:      var(--gray-400);
 
-  /* 边框 */
-  --border:         var(--gray-200);
-  --border-strong:  var(--gray-300);
-  --border-color:   var(--gray-200);   /* 兼容旧用法 */
+  /* 边框（默认分割线略浅，强边框降一档保持对比层级） */
+  --border:         var(--gray-100);
+  --border-strong:  var(--gray-200);
+  --border-color:   var(--gray-100);   /* 兼容旧用法 */
 
   /* 旧变量兼容层（避免组件 break） */
   --primary-brand:   var(--primary);
@@ -57,6 +57,9 @@
   --shadow-sm: 0 1px 3px 0 hsl(0 0% 0% / 0.06), 0 1px 2px -1px hsl(0 0% 0% / 0.04);
   --shadow-md: 0 4px 6px -1px hsl(0 0% 0% / 0.07), 0 2px 4px -2px hsl(0 0% 0% / 0.05);
   --shadow-up: 0 -4px 16px 0 hsl(0 0% 0% / 0.07);
+  /* 可选卡片 hover：大模糊、低透明度，避免边缘过硬的「浮起」感 */
+  --shadow-card-hover: 0 2px 8px -2px hsl(222 47% 20% / 0.05),
+    0 12px 32px -10px hsl(222 47% 20% / 0.08);
 
   /* 布局常量 */
   --nav-height:    60px;
@@ -93,8 +96,8 @@
   --color-accent-foreground:    hsl(222 47% 11%);
   --color-destructive:          hsl(0 84% 60%);
   --color-destructive-foreground: hsl(0 0% 100%);
-  --color-border:               hsl(214 32% 91%);
-  --color-input:                hsl(214 32% 91%);
+  --color-border:               hsl(214 32% 95%);
+  --color-input:                hsl(214 32% 95%);
   --color-ring:                 hsl(217 100% 54%);
   --radius: 0.375rem;
 }

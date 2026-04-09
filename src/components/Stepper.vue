@@ -9,18 +9,24 @@
         <!-- 左侧轨道：圆点 + 贯通竖线 -->
         <div class="stepper-track">
           <div class="stepper-indicator" :data-state="stepState(step.step)">
-            <!-- completed: 对勾 -->
-            <svg v-if="step.step < currentStep" width="14" height="14" viewBox="0 0 14 14" fill="none">
-              <path d="M2.5 7l3 3 6-6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            <svg
+              v-if="step.step < currentStep"
+              class="stepper-check"
+              width="14"
+              height="14"
+              viewBox="0 0 14 14"
+              fill="none"
+              aria-hidden="true"
+            >
+              <path
+                d="M2.5 7l3 3 6-6"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              />
             </svg>
-            <!-- active/inactive: IconPark 图标 or 数字 -->
-            <component
-              v-else-if="step.icon"
-              :is="step.icon"
-              :size="15"
-              :stroke-width="2.2"
-            />
-            <span v-else>{{ step.step }}</span>
+            <span v-else class="stepper-num">{{ step.step }}</span>
           </div>
           <!-- 竖线贯穿到下一个步骤 -->
           <div
@@ -143,49 +149,49 @@ function goToStep(path) {
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: var(--text-sm, 13px);
-  font-weight: 600;
-  background: var(--gray-100, #f1f5f9);
-  color: var(--gray-400, #94a3b8);
+  background: var(--gray-200, #e5e7eb);
+  color: var(--text-main, #111827);
   transition: background 0.2s, color 0.2s;
 }
 
-.stepper-indicator :deep(svg) {
-  color: inherit;
-}
-.stepper-indicator :deep(svg path),
-.stepper-indicator :deep(svg line),
-.stepper-indicator :deep(svg polyline),
-.stepper-indicator :deep(svg circle),
-.stepper-indicator :deep(svg rect) {
-  stroke: currentColor !important;
-  fill: none !important;
+.stepper-num {
+  font-size: var(--text-sm, 13px);
+  font-weight: 600;
+  line-height: 1;
 }
 
+/* 未完成：灰底 + 深色数字 */
+.stepper-indicator[data-state='inactive'] {
+  background: var(--gray-200, #e5e7eb);
+  color: var(--text-main, #111827);
+}
+
+/* 当前：蓝底 + 白字 */
 .stepper-indicator[data-state='active'] {
-  background: #0f172a;
+  background: var(--primary);
   color: #fff;
 }
 
+/* 已完成：灰底 + 深色对勾 */
 .stepper-indicator[data-state='completed'] {
-  background: var(--primary, #1876ff);
-  color: #fff;
+  background: var(--gray-200, #e5e7eb);
+  color: var(--gray-700, #374151);
+}
+
+.stepper-check {
+  display: block;
+  flex-shrink: 0;
 }
 
 /* ── 竖线 ── */
 .stepper-separator {
   flex: 1;
   width: 2px;
-  background: var(--border, #e2e8f0);
+  background: var(--border, #e5e7eb);
   border-radius: 1px;
   margin: 5px 0 0;
   min-height: 12px;
   transition: background 0.3s;
-}
-
-.stepper-separator[data-state='completed'] {
-  background: var(--primary, #1876ff);
-  opacity: 0.35;
 }
 
 /* ── 右侧内容 ── */
@@ -265,7 +271,7 @@ function goToStep(path) {
 .stepper-sub.active {
   color: var(--primary, #1876ff);
   font-weight: 600;
-  background: var(--primary-light, #eff6ff);
+  background: none;
 }
 
 .stepper-gap {

@@ -71,7 +71,7 @@ const emit = defineEmits(['update:modelValue'])
   align-items: center;
   flex-shrink: 0;
   color: #6b7280;
-  background: #f9fafb;
+  background: #fff;
   border-left: 1px solid #d1d5db;
   white-space: nowrap;
 }

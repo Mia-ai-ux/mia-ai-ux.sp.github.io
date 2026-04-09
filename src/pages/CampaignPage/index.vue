@@ -37,13 +37,13 @@ const { steps, getStepNumber, getNextPath } = useFlowSteps()
 const settingsRef = ref(null)
 
 const subItems = [
-  { label: 'Campaign settings', anchorId: 'section-campaign-settings' },
+  { label: 'Settings',          anchorId: 'section-campaign-settings' },
   { label: 'Sites',             anchorId: 'section-sites' },
   { label: 'Bidding strategy',  anchorId: 'section-bidding-strategy' },
   { label: 'Targeting',         anchorId: 'section-targeting' }
 ]
 
-const activeSubItem = ref('Campaign settings')
+const activeSubItem = ref('Settings')
 
 let observer = null
 onMounted(() => {
