@@ -8,5 +8,5 @@
 import TopNav from '@/components/TopNav.vue'
 import { Toaster } from '@/components/ui/toast'
 
-const userName = 'Mia Hua'
+const userName = 'Mia Hu'
 </script>
