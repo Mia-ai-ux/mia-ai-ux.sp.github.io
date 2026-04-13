@@ -65,8 +65,8 @@ export const useCampaignStore = defineStore('campaign', () => {
 
     // Product targeting step
     productTargetMode: 'category',           // 'category' | 'product'
-    productCategoryTab: 'suggested',         // 'suggested' | 'search' | 'campaigns'
-    productProductTab: 'suggested',          // 'suggested' | 'library' | 'campaigns' | 'manual'
+    productCategoryTab: 'campaigns',         // 'suggested' | 'search' | 'campaigns'
+    productProductTab: 'campaigns',          // 'suggested' | 'library' | 'campaigns' | 'manual'
     productTargetingDefaultBid: 0.02,
     productDeliveryType: { exact: true, expanded: false },
     productAsinTheme: 'similar',
