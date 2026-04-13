@@ -8,7 +8,7 @@
       </div>
     </main>
   </div>
-  <BottomBar next-label="下一步" @cancel="router.push('/campaign')" @next="router.push('/ad')" />
+  <BottomBar @cancel="router.push('/campaign')" @next="router.push('/ad')" />
 </template>
 
 <script setup>

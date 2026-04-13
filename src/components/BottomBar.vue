@@ -1,12 +1,12 @@
 <template>
   <footer class="bottom-bar">
     <div class="bar-inner">
-      <!-- 左：退出（点击弹二次确认） -->
+      <!-- Left: Exit (confirm dialog) -->
       <div class="left-group">
-        <UiButton variant="outline" @click="showConfirm = true">退出</UiButton>
+        <UiButton variant="outline" @click="showConfirm = true">Exit</UiButton>
       </div>
 
-      <!-- 右：上一步 + 下一步 -->
+      <!-- Right: Back + Next -->
       <div class="right-group">
         <UiButton v-if="showBack" variant="outline" @click="emit('back')">
           {{ backLabel }}
@@ -18,15 +18,15 @@
       </div>
     </div>
 
-    <!-- 退出二次确认 Dialog -->
+    <!-- Exit confirmation dialog -->
     <Teleport to="body">
       <div v-if="showConfirm" class="dialog-mask" @click.self="showConfirm = false">
         <div class="dialog-box" role="dialog" aria-modal="true">
-          <h3 class="dialog-title">确认退出？</h3>
-          <p class="dialog-body">退出后当前广告活动的所有配置将会丢失，无法恢复。</p>
+          <h3 class="dialog-title">Exit setup?</h3>
+          <p class="dialog-body">If you leave now, your campaign draft will be discarded and cannot be recovered.</p>
           <div class="dialog-actions">
-            <UiButton variant="outline" @click="showConfirm = false">继续编辑</UiButton>
-            <UiButton variant="destructive" @click="onConfirmCancel">确认退出</UiButton>
+            <UiButton variant="outline" @click="showConfirm = false">Continue editing</UiButton>
+            <UiButton variant="destructive" @click="onConfirmCancel">Exit</UiButton>
           </div>
         </div>
       </div>
@@ -39,8 +39,8 @@ import { ref } from 'vue'
 import UiButton from '@/components/ui/button/Button.vue'
 
 defineProps({
-  nextLabel: { type: String, default: '下一步' },
-  backLabel: { type: String, default: '上一步' },
+  nextLabel: { type: String, default: 'Next' },
+  backLabel: { type: String, default: 'Previous' },
   showBack:  { type: Boolean, default: false },
   loading:   { type: Boolean, default: false }
 })
@@ -104,7 +104,7 @@ function onConfirmCancel() {
   .bottom-bar { left: 0; right: 0; }
 }
 
-/* ── 退出确认弹窗 ── */
+/* Exit confirmation dialog */
 .dialog-mask {
   position: fixed;
   inset: 0;

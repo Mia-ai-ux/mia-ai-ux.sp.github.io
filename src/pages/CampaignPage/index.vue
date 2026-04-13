@@ -15,7 +15,7 @@
     </div>
   </div>
 
-  <BottomBar @cancel="onCancel" @next="onNext" :show-back="true" />
+  <BottomBar @cancel="onCancel" @next="onNext" />
 </template>
 
 <script setup>

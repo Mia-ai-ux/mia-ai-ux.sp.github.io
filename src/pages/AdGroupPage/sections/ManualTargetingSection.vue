@@ -1,16 +1,6 @@
 <template>
   <section id="section-manual-targeting" class="card">
     <div class="card-header">
-      <div class="illus" aria-hidden="true">
-        <svg class="illus-svg" width="40" height="40" viewBox="0 0 40 40" fill="none">
-          <rect width="40" height="40" rx="10" fill="currentColor" class="illus-bg" />
-          <path
-            d="M20 12a4 4 0 1 1 0 8 4 4 0 0 1 0-8zm0 10c4.4 0 8 2 8 4.5V28H12v-1.5C12 24 15.6 22 20 22z"
-            fill="currentColor"
-            class="illus-fg"
-          />
-        </svg>
-      </div>
       <div class="title-group">
         <h2>Manual Targeting</h2>
         <p>Targeting uses keywords and products to help your ads appear in search and detail pages.</p>
@@ -51,27 +41,7 @@ const { form } = storeToRefs(useCampaignStore())
 }
 
 .card-header {
-  display: flex;
-  align-items: flex-start;
-  gap: 12px;
   padding-bottom: 8px;
-}
-
-.illus {
-  flex-shrink: 0;
-}
-
-.illus-svg {
-  display: block;
-  color: var(--primary);
-}
-
-.illus-bg {
-  opacity: 0.12;
-}
-
-.illus-fg {
-  opacity: 0.75;
 }
 
 .title-group {

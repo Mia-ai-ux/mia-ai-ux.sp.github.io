@@ -4,45 +4,20 @@
       <Stepper :steps="steps" :current-step="getStepNumber('/keyword-targeting')" />
 
       <div class="content-wrapper">
-        <h2 class="page-title">
-          Keyword Targeting
-          <span class="required-mark" aria-hidden="true">*</span>
-        </h2>
+        <h2 class="page-title">Keyword Targeting</h2>
 
         <main class="main-content">
           <div class="kt-shell">
-            <!-- Left -->
-            <div class="kt-left">
-              <div class="kt-tabs-row">
-                <div class="kt-tabs">
-                  <button
-                    v-for="t in tabs"
-                    :key="t.id"
-                    type="button"
-                    class="kt-tab"
-                    :class="{ active: form.keywordTargetTab === t.id }"
-                    @click="form.keywordTargetTab = t.id"
-                  >
-                    {{ t.label }}
-                  </button>
-                </div>
-                <button type="button" class="link-btn" @click="addAllFromSource">Add all</button>
-              </div>
+            <div class="kt-tabs-row">
+              <UnderlineTabs v-model="form.keywordTargetTab" :items="tabs" size="lg" />
+            </div>
 
-              <div class="kt-toolbar">
-                <label class="toolbar-field">
-                  <span class="toolbar-label">Ad group default bid</span>
-                  <span class="bid-input-wrap">
-                    <span class="currency">$</span>
-                    <input
-                      v-model.number="form.keywordTargetingDefaultBid"
-                      class="bid-input"
-                      type="number"
-                      step="0.01"
-                      min="0"
-                    />
-                  </span>
-                </label>
+            <div class="kt-right-head">
+              <span class="added-title">{{ form.keywords.length }} added</span>
+            </div>
+
+            <div class="kt-left-stack">
+              <div v-if="form.keywordTargetTab === 'amazon'" class="kt-toolbar">
                 <div class="toolbar-field match-types">
                   <span class="toolbar-label">Match type</span>
                   <label class="chk"><input v-model="form.keywordTargetingMatchTypes.exact" type="checkbox" /> Exact</label>
@@ -53,143 +28,101 @@
 
               <!-- Amazon -->
               <div v-if="form.keywordTargetTab === 'amazon'" class="kt-panel">
-                <div class="sort-row">
-                  <select v-model="amazonSort" class="sort-select">
-                    <option value="orders_desc">Descending · Historical order volume</option>
-                    <option value="bid_desc">Descending · Suggested bid</option>
-                  </select>
-                </div>
-
-                <div
-                  v-for="group in amazonGroups"
-                  :key="group.id"
-                  class="kw-group"
-                >
-                  <button type="button" class="kw-group-head" @click="toggleGroup(group.id)">
-                    <svg class="chev" :class="{ open: openGroups[group.id] }" width="12" height="12" viewBox="0 0 12 12" fill="none">
-                      <path d="M4 2l4 4-4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-                    </svg>
-                    {{ group.title }}
-                  </button>
-                  <div v-show="openGroups[group.id]" class="kw-group-body">
-                    <table class="data-table">
-                      <thead>
-                        <tr>
-                          <th>Keyword</th>
-                          <th class="narrow">IS</th>
-                          <th class="narrow">IR</th>
-                          <th>Match type</th>
-                          <th>Suggested bid</th>
-                          <th class="action-col">Action</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        <tr v-for="row in sortedAmazonRows(group.rows)" :key="row.id">
-                          <td>
-                            <p class="cell-title">{{ row.text }}</p>
-                            <p v-if="row.subtitle" class="cell-meta">{{ row.subtitle }}</p>
-                          </td>
-                          <td class="muted">{{ row.is }}</td>
-                          <td class="muted">{{ row.ir }}</td>
-                          <td>{{ row.matchType }}</td>
-                          <td>
-                            <div class="sugg-main">{{ row.suggestBid }}</div>
-                            <div class="sugg-range">{{ row.suggestRange }}</div>
-                          </td>
-                          <td class="action-col">
-                            <button
-                              type="button"
-                              class="icon-add"
-                              :class="{ added: isAdded(row.text) }"
-                              :disabled="isAdded(row.text)"
-                              :aria-label="isAdded(row.text) ? 'Already added' : 'Add keyword'"
-                              @click="addFromRow(row)"
-                            >
-                              {{ isAdded(row.text) ? '✓' : '+' }}
-                            </button>
-                          </td>
-                        </tr>
-                      </tbody>
-                    </table>
-                  </div>
-                </div>
-
-                <div class="pagination">
-                  <span class="page-info">200 items total</span>
-                  <div class="page-btns">
-                    <button type="button" class="page-btn" disabled>Previous</button>
-                    <button type="button" class="page-btn active">1</button>
-                    <button type="button" class="page-btn">2</button>
-                    <button type="button" class="page-btn">3</button>
-                    <button type="button" class="page-btn">4</button>
-                    <button type="button" class="page-btn">Next</button>
-                  </div>
-                  <select class="page-size" disabled>
-                    <option>50 / page</option>
-                  </select>
-                </div>
-              </div>
-
-              <!-- Library -->
-              <div v-else-if="form.keywordTargetTab === 'library'" class="kt-panel">
-                <p class="panel-hint">Add keywords from your saved targeting library.</p>
-                <table class="data-table flat">
+                <table class="data-table data-table--kw-stack">
                   <thead>
                     <tr>
-                      <th>Keyword</th>
-                      <th class="narrow">IS</th>
-                      <th class="narrow">IR</th>
+                      <th class="kw-stack-th">
+                        <span class="kw-stack-th__primary">Keyword</span>
+                        <span class="kw-stack-th__secondary">
+                          IS | IR
+                          <button
+                            type="button"
+                            class="kw-stack-th__info"
+                            aria-label="About impression share (IS) and impression rate (IR)"
+                          >
+                            <img :src="iconHelpCircle" width="14" height="14" alt="" />
+                          </button>
+                        </span>
+                      </th>
                       <th>Match type</th>
                       <th>Suggested bid</th>
-                      <th class="action-col">Action</th>
+                      <th class="action-col" aria-label="Action"></th>
                     </tr>
                   </thead>
                   <tbody>
-                    <tr v-for="row in form.libraryKeywords" :key="row.id">
-                      <td>
-                        <p class="cell-title">{{ row.text }}</p>
-                        <p v-if="row.subtitle" class="cell-meta">{{ row.subtitle }}</p>
-                      </td>
-                      <td class="muted">{{ row.is }}</td>
-                      <td class="muted">{{ row.ir }}</td>
-                      <td>{{ row.matchType }}</td>
-                      <td>
-                        <div class="sugg-main">{{ row.suggestBid }}</div>
-                        <div class="sugg-range">{{ row.suggestRange }}</div>
-                      </td>
-                      <td class="action-col">
-                        <button
-                          type="button"
-                          class="icon-add"
-                          :class="{ added: isAdded(row.text) }"
-                          :disabled="isAdded(row.text)"
-                          :aria-label="isAdded(row.text) ? 'Already added' : 'Add keyword'"
-                          @click="addFromRow(row)"
+                    <template v-if="amazonTableGroups.length === 0">
+                      <tr>
+                        <td colspan="4" class="kt-match-empty">
+                          Select at least one match type above to see suggestions.
+                        </td>
+                      </tr>
+                    </template>
+                    <template v-else>
+                      <template v-for="group in amazonTableGroups" :key="group.base.id">
+                        <tr v-for="(line, lineIdx) in group.lines" :key="line.rowKey">
+                        <td
+                          v-if="lineIdx === 0"
+                          :rowspan="group.lines.length"
+                          class="kw-stack-td kw-stack-td--rowspan"
                         >
-                          {{ isAdded(row.text) ? '✓' : '+' }}
-                        </button>
-                      </td>
-                    </tr>
+                          <p class="cell-title kw-stack-td__title">{{ group.base.text }}</p>
+                          <p class="kw-stack-td__meta">IS: {{ group.base.is }} | IR: {{ group.base.ir }}</p>
+                        </td>
+                        <td>{{ line.matchType }}</td>
+                        <td>
+                          <div class="sugg-main">{{ line.suggestBid }}</div>
+                          <div class="sugg-range">{{ line.suggestRange }}</div>
+                        </td>
+                        <td class="action-col">
+                          <button
+                            type="button"
+                            class="eb-exclude-btn"
+                            :disabled="isAdded(group.base.text, line.matchType)"
+                            :aria-label="isAdded(group.base.text, line.matchType) ? 'Already added' : 'Add keyword'"
+                            @click="
+                              addFromRow({
+                                text: group.base.text,
+                                is: group.base.is,
+                                ir: group.base.ir,
+                                matchType: line.matchType,
+                                suggestBid: line.suggestBid,
+                                suggestRange: line.suggestRange
+                              })
+                            "
+                          >
+                            {{ isAdded(group.base.text, line.matchType) ? 'Added' : 'Add' }}
+                          </button>
+                        </td>
+                        </tr>
+                      </template>
+                    </template>
                   </tbody>
                 </table>
               </div>
 
               <!-- Campaigns -->
-              <div v-else-if="form.keywordTargetTab === 'campaigns'" class="kt-panel">
+              <div v-else-if="form.keywordTargetTab === 'campaigns'" class="kt-panel kt-panel--campaigns">
                 <div class="filters-row">
                   <label class="filter-field">
                     <span class="toolbar-label">Campaign</span>
-                    <select v-model="form.keywordSelectedCampaignId" class="filter-select">
-                      <option value="">Select campaign</option>
-                      <option v-for="c in mockCampaigns" :key="c.id" :value="c.id">{{ c.name }}</option>
-                    </select>
+                    <div class="filter-ui-select">
+                      <UiSelect
+                        v-model="form.keywordSelectedCampaignId"
+                        placeholder="Select campaign"
+                        :options="keywordCampaignSelectOptions"
+                      />
+                    </div>
                   </label>
                   <label class="filter-field">
                     <span class="toolbar-label">Ad group</span>
-                    <select v-model="form.keywordSelectedAdGroupId" class="filter-select">
-                      <option value="">Select ad group</option>
-                      <option v-for="g in filteredAdGroups" :key="g.id" :value="g.id">{{ g.name }}</option>
-                    </select>
+                    <div class="filter-ui-select">
+                      <UiSelect
+                        v-model="form.keywordSelectedAdGroupId"
+                        placeholder="Select ad group"
+                        :options="keywordAdGroupSelectOptions"
+                        :disabled="!form.keywordSelectedCampaignId"
+                      />
+                    </div>
                   </label>
                 </div>
                 <div v-if="!form.keywordSelectedCampaignId || !form.keywordSelectedAdGroupId" class="empty-block">
@@ -207,63 +140,81 @@
                   <thead>
                     <tr>
                       <th>Keyword</th>
-                      <th>Source status</th>
+                      <th v-if="showCampaignSourceStatusColumn">Source status</th>
                       <th>Match type</th>
                       <th>Suggested bid</th>
                       <th class="action-col">Action</th>
                     </tr>
                   </thead>
                   <tbody>
-                    <tr v-for="row in campaignKeywordRows" :key="row.id">
-                      <td>
-                        <p class="cell-title">{{ row.text }}</p>
-                        <p v-if="row.subtitle" class="cell-meta">{{ row.subtitle }}</p>
-                      </td>
-                      <td class="muted">{{ row.status }}</td>
-                      <td>{{ row.matchType }}</td>
-                      <td>
-                        <div class="sugg-main">{{ row.suggestBid }}</div>
-                        <div class="sugg-range">{{ row.suggestRange }}</div>
-                      </td>
-                      <td class="action-col">
-                        <button
-                          type="button"
-                          class="icon-add"
-                          :class="{ added: isAdded(row.text) }"
-                          :disabled="isAdded(row.text)"
-                          :aria-label="isAdded(row.text) ? 'Already added' : 'Add keyword'"
-                          @click="addFromRow(row)"
+                    <template v-if="campaignTableGroups.length === 0">
+                      <tr>
+                        <td :colspan="showCampaignSourceStatusColumn ? 5 : 4" class="kt-match-empty">
+                          No keywords to display for this ad group.
+                        </td>
+                      </tr>
+                    </template>
+                    <template v-else>
+                      <template v-for="group in campaignTableGroups" :key="group.base.id">
+                        <tr v-for="(line, lineIdx) in group.lines" :key="line.rowKey">
+                        <td
+                          v-if="lineIdx === 0"
+                          :rowspan="group.lines.length"
+                          class="kw-stack-td kw-stack-td--rowspan"
                         >
-                          {{ isAdded(row.text) ? '✓' : '+' }}
-                        </button>
-                      </td>
-                    </tr>
+                          <p class="cell-title">{{ group.base.text }}</p>
+                          <p class="cell-meta cell-meta--isir">IS: {{ group.base.is }} | IR: {{ group.base.ir }}</p>
+                        </td>
+                        <td
+                          v-if="showCampaignSourceStatusColumn && lineIdx === 0"
+                          :rowspan="group.lines.length"
+                          class="muted kw-td-status"
+                        >
+                          {{ group.base.status }}
+                        </td>
+                        <td>{{ line.matchType }}</td>
+                        <td>
+                          <div class="sugg-main">{{ line.suggestBid }}</div>
+                          <div class="sugg-range">{{ line.suggestRange }}</div>
+                        </td>
+                        <td class="action-col">
+                          <button
+                            type="button"
+                            class="eb-exclude-btn"
+                            :disabled="isAdded(group.base.text, line.matchType)"
+                            :aria-label="isAdded(group.base.text, line.matchType) ? 'Already added' : 'Add keyword'"
+                            @click="
+                              addFromRow({
+                                text: group.base.text,
+                                is: group.base.is,
+                                ir: group.base.ir,
+                                matchType: line.matchType,
+                                suggestBid: line.suggestBid,
+                                suggestRange: line.suggestRange
+                              })
+                            "
+                          >
+                            {{ isAdded(group.base.text, line.matchType) ? 'Added' : 'Add' }}
+                          </button>
+                        </td>
+                        </tr>
+                      </template>
+                    </template>
                   </tbody>
                 </table>
               </div>
-
-              <!-- Manual -->
-              <div v-else class="kt-panel manual-panel">
-                <textarea
-                  v-model="manualInput"
-                  class="manual-textarea"
-                  rows="10"
-                  placeholder="Enter keywords, one per line"
-                />
-                <div class="manual-actions">
-                  <button type="button" class="primary-btn" @click="addManualKeywords">Add</button>
-                </div>
-              </div>
             </div>
 
-            <!-- Right -->
-            <div class="kt-right">
-              <div class="kt-right-head">
-                <span class="added-title">{{ form.keywords.length }} added</span>
+            <div class="kt-right-stack">
+              <div class="kt-added-toolbar">
+                <button type="button" class="add-keyword-lite-btn" @click="addManualKeywordRow">
+                  <span class="add-keyword-lite-btn__plus" aria-hidden="true">+</span>
+                  Add keyword
+                </button>
                 <button
                   v-if="form.keywords.length > 0"
                   type="button"
-                  class="link-btn"
+                  class="remove-all-text-btn"
                   @click="removeAllAdded"
                 >
                   Remove all
@@ -279,39 +230,68 @@
                   </svg>
                 </div>
                 <p class="empty-text">尚未添加关键词</p>
-                <p class="empty-hint">从左侧选择关键词，点击 + 添加到此处</p>
+                <p class="empty-hint">从左侧添加，或点击上方 + Add keyword 手动输入</p>
               </div>
 
               <div v-else class="added-table-wrap">
                 <table class="data-table added-table">
                   <thead>
                     <tr>
-                      <th class="check-col">
-                        <input type="checkbox" :checked="allAddedChecked" @change="toggleAllAdded" />
+                      <th class="kw-stack-th">
+                        <span class="kw-stack-th__primary">Keyword</span>
+                        <span class="kw-stack-th__secondary">
+                          IS | IR
+                          <button
+                            type="button"
+                            class="kw-stack-th__info"
+                            aria-label="About impression share (IS) and impression rate (IR)"
+                          >
+                            <img :src="iconHelpCircle" width="14" height="14" alt="" />
+                          </button>
+                        </span>
                       </th>
-                      <th>Keyword</th>
                       <th>Match type</th>
                       <th>Suggested bid</th>
-                      <th>Bid (USD)</th>
-                      <th class="action-col">Action</th>
+                      <th>Bid</th>
+                      <th class="action-col" aria-label="Action"></th>
                     </tr>
                   </thead>
                   <tbody>
                     <tr v-for="kw in form.keywords" :key="kw.id">
-                      <td class="check-col">
-                        <input v-model="kw.checked" type="checkbox" />
+                      <td class="kw-stack-td">
+                        <template v-if="kw.manual">
+                          <input
+                            :id="'added-kw-' + kw.id"
+                            v-model="kw.text"
+                            class="added-kw-input"
+                            type="text"
+                            placeholder="Enter keyword"
+                          />
+                          <p class="kw-stack-td__meta">IS: — | IR: —</p>
+                        </template>
+                        <template v-else>
+                          <p class="cell-title kw-stack-td__title">{{ kw.text }}</p>
+                          <p class="kw-stack-td__meta">IS: {{ kw.is }} | IR: {{ kw.ir }}</p>
+                        </template>
                       </td>
                       <td>
-                        <p class="cell-title">{{ kw.text }}</p>
-                        <p v-if="kw.subtitle" class="cell-meta">{{ kw.subtitle }}</p>
+                        <template v-if="kw.manual">
+                          <div class="added-match-select">
+                            <UiSelect
+                              v-model="kw.matchType"
+                              size="sm"
+                              :options="keywordAddedMatchTypeOptions"
+                            />
+                          </div>
+                        </template>
+                        <template v-else>{{ kw.matchType }}</template>
                       </td>
-                      <td>{{ kw.matchType }}</td>
                       <td>
                         <div class="sugg-main">{{ kw.suggestBid }}</div>
                         <div class="sugg-range">{{ kw.suggestRange }}</div>
                       </td>
                       <td>
-                        <span class="bid-input-wrap">
+                        <span class="bid-input-wrap bid-input-wrap--minimal">
                           <span class="currency">$</span>
                           <input
                             v-model.number="kw.bid"
@@ -341,12 +321,15 @@
 </template>
 
 <script setup>
-import { ref, computed, reactive, onMounted } from 'vue'
+import { computed, nextTick, onMounted, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import { storeToRefs } from 'pinia'
 import { useCampaignStore } from '@/stores/campaign'
 import Stepper from '@/components/Stepper.vue'
 import BottomBar from '@/components/BottomBar.vue'
+import UnderlineTabs from '@/components/ui/UnderlineTabs.vue'
+import UiSelect from '@/components/ui/select/Select.vue'
+import iconHelpCircle from '@/assets/icon-help-circle.svg'
 import { useFlowSteps } from '@/composables/useFlowSteps'
 
 const router = useRouter()
@@ -357,44 +340,61 @@ const { steps, getStepNumber, getNextPath, getBackPath } = useFlowSteps()
 onMounted(() => {
   campaignStore.form.targeting = 'manual'
   campaignStore.form.manualTargetType = 'keyword'
+  if (campaignStore.form.keywordTargetTab === 'library' || campaignStore.form.keywordTargetTab === 'manual') {
+    campaignStore.form.keywordTargetTab = 'amazon'
+  }
 })
 
 const tabs = [
-  { id: 'amazon', label: 'Amazon keywords' },
-  { id: 'library', label: 'Add via targeting library' },
-  { id: 'campaigns', label: 'Select from campaigns' },
-  { id: 'manual', label: 'Manual input' }
+  { id: 'amazon', label: 'Amazon Suggested' },
+  { id: 'campaigns', label: 'Select from campaigns' }
 ]
 
-const amazonSort = ref('orders_desc')
-const manualInput = ref('')
+const keywordAddedMatchTypeOptions = [
+  { value: 'Exact', label: 'Exact' },
+  { value: 'Phrase', label: 'Phrase' },
+  { value: 'Broad', label: 'Broad' }
+]
 
-const openGroups = reactive({
-  brand: true,
-  category: true
-})
+/** Campaigns 表「Source status」列：暂隐藏，改 true 可恢复 */
+const showCampaignSourceStatusColumn = false
 
-function toggleGroup(id) {
-  openGroups[id] = !openGroups[id]
-}
+/** 表格行顺序与参考稿一致：Broad → Phrase → Exact */
+const DISPLAY_MATCH_ORDER = ['Broad', 'Phrase', 'Exact']
 
-const amazonGroups = [
+const amazonSuggestedRows = [
   {
-    id: 'brand',
-    title: 'Keywords related to your brand',
-    rows: [
-      { id: 'a1', text: 'dreo brand heater', subtitle: 'Brand term', is: '8.2%', ir: 5, matchType: 'Exact', suggestBid: '$0.52', suggestRange: '$0.37–$0.62' },
-      { id: 'a2', text: 'dreo portable heater', subtitle: 'Brand + product', is: '9.1%', ir: 4, matchType: 'Exact', suggestBid: '$0.61', suggestRange: '$0.45–$0.78' }
-    ]
+    id: 'a3',
+    text: 'space heaters indoor use',
+    is: '14.2%',
+    ir: 2,
+    suggestByMatch: {
+      Broad: { bid: '$1.45', range: '$1.12–$1.78' },
+      Phrase: { bid: '$1.40', range: '$1.08–$1.72' },
+      Exact: { bid: '$1.37', range: '$1.06–$1.76' }
+    }
   },
   {
-    id: 'category',
-    title: 'Keywords related to your product category',
-    rows: [
-      { id: 'a3', text: 'space heaters indoor use', subtitle: 'Indoor space heaters', is: '14.2%', ir: 2, matchType: 'Exact', suggestBid: '$1.37', suggestRange: '$1.06–$1.76' },
-      { id: 'a4', text: 'energy efficient electric heater', subtitle: 'Energy efficient heating', is: '11.8%', ir: 3, matchType: 'Exact', suggestBid: '$1.12', suggestRange: '$0.88–$1.41' },
-      { id: 'a5', text: 'dreo portable heater', subtitle: 'Portable Dreo heater', is: '10.5%', ir: 3, matchType: 'Exact', suggestBid: '$0.98', suggestRange: '$0.72–$1.22' }
-    ]
+    id: 'a4',
+    text: 'energy efficient electric heater',
+    is: '11.8%',
+    ir: 3,
+    suggestByMatch: {
+      Broad: { bid: '$1.22', range: '$0.95–$1.48' },
+      Phrase: { bid: '$1.17', range: '$0.91–$1.42' },
+      Exact: { bid: '$1.12', range: '$0.88–$1.41' }
+    }
+  },
+  {
+    id: 'a5',
+    text: 'dreo portable heater',
+    is: '10.5%',
+    ir: 3,
+    suggestByMatch: {
+      Broad: { bid: '$1.08', range: '$0.82–$1.32' },
+      Phrase: { bid: '$1.02', range: '$0.78–$1.28' },
+      Exact: { bid: '$0.98', range: '$0.72–$1.22' }
+    }
   }
 ]
 
@@ -409,32 +409,132 @@ const mockAdGroups = [
   { id: 'g3', campaignId: 'c2', name: 'Brand – Exact' }
 ]
 
-const campaignKeywordRows = computed(() => {
-  if (!form.value.keywordSelectedCampaignId || !form.value.keywordSelectedAdGroupId) return []
-  return [
-    { id: 'ck1', text: 'small space heater', subtitle: 'Compact heater', status: 'Active', matchType: 'Exact', suggestBid: '$0.89', suggestRange: '$0.65–$1.08' },
-    { id: 'ck2', text: 'quiet heater bedroom', subtitle: 'Bedroom heater', status: 'Active', matchType: 'Phrase', suggestBid: '$0.76', suggestRange: '$0.55–$0.94' }
-  ]
-})
+const keywordCampaignSelectOptions = computed(() =>
+  mockCampaigns.map((c) => ({ value: c.id, label: c.name }))
+)
 
 const filteredAdGroups = computed(() => {
   const cid = form.value.keywordSelectedCampaignId
-  if (!cid) return mockAdGroups
-  return mockAdGroups.filter(g => g.campaignId === cid)
+  if (!cid) return []
+  return mockAdGroups.filter((g) => g.campaignId === cid)
 })
 
-function sortedAmazonRows(rows) {
-  const r = [...rows]
-  if (amazonSort.value === 'bid_desc') {
-    r.sort((a, b) => parseBid(b.suggestBid) - parseBid(a.suggestBid))
+const keywordAdGroupSelectOptions = computed(() =>
+  filteredAdGroups.value.map((g) => ({ value: g.id, label: g.name }))
+)
+
+watch(
+  () => form.value.keywordSelectedCampaignId,
+  () => {
+    form.value.keywordSelectedAdGroupId = ''
   }
-  return r
+)
+
+/** Campaigns 表：每行只带数据源里实际存在的 match type；不同 ad group 演示不同组合 */
+const campaignKeywordRows = computed(() => {
+  if (!form.value.keywordSelectedCampaignId || !form.value.keywordSelectedAdGroupId) return []
+  const gid = form.value.keywordSelectedAdGroupId
+
+  const ck1Full = {
+    id: 'ck1',
+    text: 'small space heater',
+    is: '14.2%',
+    ir: 2,
+    status: 'Active',
+    suggestByMatch: {
+      Broad: { bid: '$0.98', range: '$0.72–$1.15' },
+      Phrase: { bid: '$0.92', range: '$0.68–$1.10' },
+      Exact: { bid: '$0.89', range: '$0.65–$1.08' }
+    }
+  }
+  const ck2Full = {
+    id: 'ck2',
+    text: 'quiet heater bedroom',
+    is: '11.8%',
+    ir: 3,
+    status: 'Active',
+    suggestByMatch: {
+      Broad: { bid: '$0.84', range: '$0.62–$1.02' },
+      Phrase: { bid: '$0.79', range: '$0.58–$0.98' },
+      Exact: { bid: '$0.76', range: '$0.55–$0.94' }
+    }
+  }
+
+  if (gid === 'g1') {
+    return [
+      { ...ck1Full, suggestByMatch: { Exact: ck1Full.suggestByMatch.Exact } },
+      { ...ck2Full, suggestByMatch: { Exact: ck2Full.suggestByMatch.Exact } }
+    ]
+  }
+  if (gid === 'g2') {
+    return [
+      {
+        ...ck1Full,
+        suggestByMatch: {
+          Broad: ck1Full.suggestByMatch.Broad,
+          Phrase: ck1Full.suggestByMatch.Phrase
+        }
+      },
+      { ...ck2Full, suggestByMatch: { Broad: ck2Full.suggestByMatch.Broad } }
+    ]
+  }
+  if (gid === 'g3') {
+    return [ck1Full, { ...ck2Full, suggestByMatch: { Phrase: ck2Full.suggestByMatch.Phrase, Exact: ck2Full.suggestByMatch.Exact } }]
+  }
+  return [ck1Full, ck2Full]
+})
+
+function matchTypesFromToolbar() {
+  const m = form.value.keywordTargetingMatchTypes
+  return DISPLAY_MATCH_ORDER.filter((name) => {
+    if (name === 'Broad') return m.broad
+    if (name === 'Phrase') return m.phrase
+    return m.exact
+  })
 }
 
-function parseBid(s) {
-  const n = parseFloat(String(s).replace(/[^0-9.]/g, ''))
-  return Number.isFinite(n) ? n : 0
+/** Select from campaigns：按每条关键词数据里出现的 match type 列行，顺序固定 Broad → Phrase → Exact */
+function matchTypesFromSuggest(suggestByMatch) {
+  if (!suggestByMatch || typeof suggestByMatch !== 'object') return []
+  return DISPLAY_MATCH_ORDER.filter((name) => suggestByMatch[name] != null)
 }
+
+const amazonTableGroups = computed(() => {
+  const types = matchTypesFromToolbar()
+  if (!types.length) return []
+  return amazonSuggestedRows.map((base) => ({
+    base,
+    lines: types.map((mt) => {
+      const s = base.suggestByMatch[mt]
+      return {
+        rowKey: `${base.id}-${mt}`,
+        matchType: mt,
+        suggestBid: s?.bid ?? '—',
+        suggestRange: s?.range ?? '—'
+      }
+    })
+  }))
+})
+
+const campaignTableGroups = computed(() => {
+  return campaignKeywordRows.value
+    .map((base) => {
+      const types = matchTypesFromSuggest(base.suggestByMatch)
+      return {
+        base,
+        lines: types.map((mt) => {
+          const s = base.suggestByMatch[mt]
+          return {
+            rowKey: `${base.id}-${mt}`,
+            matchType: mt,
+            suggestBid: s?.bid ?? '—',
+            suggestRange: s?.range ?? '—'
+          }
+        })
+      }
+    })
+    .filter((g) => g.lines.length > 0)
+})
 
 function pickMatchType() {
   const m = form.value.keywordTargetingMatchTypes
@@ -444,16 +544,19 @@ function pickMatchType() {
   return 'Exact'
 }
 
-function isAdded(text) {
-  return form.value.keywords.some(k => k.text.toLowerCase() === text.toLowerCase())
+function isAdded(text, matchType) {
+  const t = text.trim().toLowerCase()
+  return form.value.keywords.some(
+    k => k.text.toLowerCase() === t && k.matchType === matchType
+  )
 }
 
 function addFromRow(row) {
   const text = row.text.trim()
-  if (!text) return
-  if (form.value.keywords.some(k => k.text.toLowerCase() === text.toLowerCase())) return
-  const def = form.value.keywordTargetingDefaultBid
   const mt = row.matchType || pickMatchType()
+  if (!text || !mt) return
+  if (isAdded(text, mt)) return
+  const def = form.value.keywordTargetingDefaultBid
   form.value.keywords.push({
     id: `kw-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
     text,
@@ -463,49 +566,8 @@ function addFromRow(row) {
     ir: row.ir ?? '—',
     suggestBid: row.suggestBid ?? '—',
     suggestRange: row.suggestRange ?? '—',
-    bid: def,
-    checked: false
+    bid: def
   })
-}
-
-function addManualKeywords() {
-  const lines = manualInput.value.split('\n').map(l => l.trim()).filter(Boolean)
-  const mt = pickMatchType()
-  const def = form.value.keywordTargetingDefaultBid
-  lines.forEach(text => {
-    if (form.value.keywords.some(k => k.text.toLowerCase() === text.toLowerCase())) return
-    form.value.keywords.push({
-      id: `kw-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
-      text,
-      subtitle: '',
-      matchType: mt,
-      is: '—',
-      ir: '—',
-      suggestBid: '—',
-      suggestRange: '—',
-      bid: def,
-      checked: false
-    })
-  })
-  manualInput.value = ''
-}
-
-function collectSourceRows() {
-  const tab = form.value.keywordTargetTab
-  if (tab === 'amazon') {
-    return amazonGroups.flatMap(g => g.rows)
-  }
-  if (tab === 'library') {
-    return [...form.value.libraryKeywords]
-  }
-  if (tab === 'campaigns') {
-    return campaignKeywordRows.value
-  }
-  return []
-}
-
-function addAllFromSource() {
-  collectSourceRows().forEach(row => addFromRow(row))
 }
 
 function removeAdded(id) {
@@ -516,13 +578,24 @@ function removeAllAdded() {
   form.value.keywords = []
 }
 
-const allAddedChecked = computed(() =>
-  form.value.keywords.length > 0 && form.value.keywords.every(k => k.checked)
-)
-
-function toggleAllAdded(e) {
-  const on = e.target.checked
-  form.value.keywords.forEach(k => { k.checked = on })
+function addManualKeywordRow() {
+  const def = form.value.keywordTargetingDefaultBid
+  const id = `kw-${Date.now()}-${Math.random().toString(36).slice(2, 9)}`
+  form.value.keywords.push({
+    id,
+    text: '',
+    subtitle: '',
+    matchType: 'Exact',
+    is: '—',
+    ir: '—',
+    suggestBid: '—',
+    suggestRange: '—',
+    bid: def,
+    manual: true
+  })
+  nextTick(() => {
+    document.getElementById(`added-kw-${id}`)?.focus()
+  })
 }
 
 function onCancel() { router.push('/') }
@@ -561,15 +634,6 @@ function onNext() { router.push(getNextPath('/keyword-targeting')) }
   color: var(--text-main);
   margin: 0 0 16px;
   padding: 0;
-  display: flex;
-  align-items: center;
-  gap: 4px;
-}
-
-.required-mark {
-  color: #e5484d;
-  font-size: 0.85em;
-  font-weight: 600;
 }
 
 .main-content {
@@ -580,59 +644,56 @@ function onNext() { router.push(getNextPath('/keyword-targeting')) }
 }
 
 .kt-shell {
-  display: flex;
-  gap: 0;
+  display: grid;
+  grid-template-columns: minmax(0, 46%) 1fr;
+  grid-template-rows: auto 1fr;
   min-height: 520px;
   background: var(--bg-card);
-  border: 1px solid var(--border);
   border-radius: var(--radius-card);
   overflow: hidden;
 }
 
-.kt-left {
-  flex: 1;
+/* 首行：Tab 与「N added」同高（grid 同行 auto 取较高一侧并拉伸） */
+.kt-tabs-row {
+  grid-column: 1;
+  grid-row: 1;
+  align-self: stretch;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  padding: 24px 20px 0;
+  border-bottom: 1px solid var(--border);
+  border-right: 1px solid var(--border);
+  box-sizing: border-box;
+}
+
+.kt-left-stack {
+  grid-column: 1;
+  grid-row: 2;
   min-width: 0;
+  min-height: 0;
   display: flex;
   flex-direction: column;
   border-right: 1px solid var(--border);
 }
 
-.kt-tabs-row {
+.kt-right-stack {
+  grid-column: 2;
+  grid-row: 2;
+  min-width: 300px;
+  min-height: 0;
   display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-  padding: 12px 16px;
-  border-bottom: 1px solid var(--border);
-  flex-wrap: wrap;
+  flex-direction: column;
+  background: #fff;
 }
 
-.kt-tabs {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 4px;
+.kt-tabs-row :deep(.underline-tabs) {
+  width: 100%;
 }
 
-.kt-tab {
-  background: none;
-  border: none;
-  padding: 8px 12px;
-  font-size: 14px;
-  font-weight: 500;
-  color: var(--text-sub);
-  cursor: pointer;
-  border-radius: 4px;
-  font-family: inherit;
-}
-
-.kt-tab:hover {
-  color: var(--text-main);
-  background: #f1f5f9;
-}
-
-.kt-tab.active {
-  color: #1876ff;
-  background: #eff6ff;
+/* 与卡片左 32px 对齐文案：去掉 Tab 按钮自身左右内边距；上内边距用行容器 32px 承担 */
+.kt-tabs-row :deep(.underline-tabs--lg .underline-tabs__trigger) {
+  padding: 0 0 14px;
 }
 
 .link-btn {
@@ -650,14 +711,16 @@ function onNext() { router.push(getNextPath('/keyword-targeting')) }
   opacity: 0.8;
 }
 
+/* 与 .kt-added-toolbar 同高：固定最小高度 + border-box，表格表头左右对齐 */
 .kt-toolbar {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
   gap: 20px 24px;
-  padding: 12px 16px;
-  border-bottom: 1px solid var(--border);
-  background: #fafbfc;
+  box-sizing: border-box;
+  flex-shrink: 0;
+  min-height: 64px;
+  padding: 18px 20px;
 }
 
 .toolbar-field {
@@ -697,7 +760,7 @@ function onNext() { router.push(getNextPath('/keyword-targeting')) }
 }
 
 .match-types {
-  gap: 12px;
+  gap: 8px 12px;
 }
 
 .chk {
@@ -713,70 +776,19 @@ function onNext() { router.push(getNextPath('/keyword-targeting')) }
   flex: 1;
   min-height: 0;
   overflow: auto;
-  padding: 12px 16px 16px;
+  padding: 0 20px 14px;
 }
 
-.sort-row {
-  margin-bottom: 12px;
-}
-
-.sort-select {
-  height: 36px;
-  padding: 0 12px;
-  border: 1px solid #d0d5dd;
-  border-radius: 4px;
-  font-size: 13px;
-  background: #fff;
-  min-width: 260px;
-}
-
-.kw-group {
-  margin-bottom: 8px;
-  border: 1px solid #e8ecf0;
-  border-radius: 6px;
-  overflow: hidden;
-}
-
-.kw-group-head {
-  width: 100%;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 12px 14px;
-  background: #f8f9fb;
-  border: none;
-  font-size: 14px;
-  font-weight: 600;
-  color: var(--text-main);
-  cursor: pointer;
-  text-align: left;
-  font-family: inherit;
-}
-
-.chev {
-  transition: transform 0.15s;
-  color: var(--text-sub);
-}
-
-.chev.open {
-  transform: rotate(90deg);
-}
-
-.kw-group-body {
-  background: #fff;
-}
-
-.panel-hint {
-  margin: 0 0 12px;
-  font-size: 13px;
-  color: var(--text-sub);
+/* 与 .kt-toolbar 上下 padding(18px) 一致：Tab 下缘 → 筛选项 → 表格的竖向节奏同 Amazon Suggested */
+.kt-panel--campaigns {
+  padding-top: 18px;
 }
 
 .filters-row {
   display: flex;
   flex-wrap: wrap;
   gap: 16px;
-  margin-bottom: 16px;
+  margin-bottom: 18px;
 }
 
 .filter-field {
@@ -785,14 +797,9 @@ function onNext() { router.push(getNextPath('/keyword-targeting')) }
   gap: 6px;
 }
 
-.filter-select {
+.filter-ui-select {
   min-width: 200px;
-  height: 36px;
-  padding: 0 10px;
-  border: 1px solid #d0d5dd;
-  border-radius: 4px;
-  font-size: 14px;
-  background: #fff;
+  max-width: 320px;
 }
 
 .data-table {
@@ -802,7 +809,7 @@ function onNext() { router.push(getNextPath('/keyword-targeting')) }
 }
 
 .data-table.flat {
-  margin-top: 8px;
+  margin-top: 0;
 }
 
 .data-table thead tr {
@@ -824,13 +831,102 @@ function onNext() { router.push(getNextPath('/keyword-targeting')) }
   border-bottom: 1px solid #f1f5f9;
 }
 
+/* 左右列表表格 cell 内边距一致 */
+.kt-left-stack .data-table th,
+.added-table-wrap .added-table th {
+  padding: 8px 10px;
+}
+
+.kt-left-stack .data-table td,
+.added-table-wrap .added-table td {
+  padding: 10px;
+}
+
+/* Amazon Suggested / 右侧已添加表：Keyword + IS|IR 纵向叠放（与设计稿一致） */
+.data-table--kw-stack .kw-stack-th,
+.added-table .kw-stack-th {
+  white-space: normal;
+  vertical-align: bottom;
+  min-width: 140px;
+}
+
+.data-table--kw-stack .kw-stack-th__primary,
+.added-table .kw-stack-th__primary {
+  display: block;
+  font-size: var(--text-base, 14px);
+  font-weight: 600;
+  color: var(--text-main);
+  line-height: 1.35;
+}
+
+.data-table--kw-stack .kw-stack-th__secondary,
+.added-table .kw-stack-th__secondary {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 6px;
+  font-size: var(--text-xs, 12px);
+  font-weight: 400;
+  color: var(--text-sub);
+  line-height: 1.3;
+}
+
+.data-table--kw-stack .kw-stack-th__info,
+.added-table .kw-stack-th__info {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0;
+  padding: 0;
+  border: none;
+  background: none;
+  cursor: help;
+  line-height: 0;
+  opacity: 0.75;
+}
+
+.data-table--kw-stack .kw-stack-th__info:hover,
+.added-table .kw-stack-th__info:hover {
+  opacity: 1;
+}
+
+.data-table--kw-stack .kw-stack-td__title,
+.added-table .kw-stack-td__title {
+  font-size: var(--text-md, 15px);
+}
+
+.data-table--kw-stack .kw-stack-td__meta,
+.added-table .kw-stack-td__meta {
+  margin: 6px 0 0;
+  font-size: var(--text-xs, 12px);
+  font-weight: 400;
+  color: var(--text-sub);
+  line-height: 1.4;
+}
+
+.data-table .kw-stack-td--rowspan {
+  vertical-align: top;
+}
+
+.data-table .kw-td-status {
+  vertical-align: top;
+}
+
+.kt-match-empty {
+  text-align: center;
+  padding: 28px 16px;
+  font-size: 14px;
+  color: var(--text-sub);
+}
+
 .data-table .narrow {
   width: 56px;
 }
 
 .data-table .action-col {
-  width: 56px;
-  text-align: center;
+  width: 72px;
+  text-align: right;
+  vertical-align: middle;
 }
 
 .cell-title {
@@ -848,6 +944,14 @@ function onNext() { router.push(getNextPath('/keyword-targeting')) }
   line-height: 1.45;
 }
 
+/* Campaigns 表关键词下：与 Amazon IS|IR 行视觉一致 */
+.data-table.flat .cell-meta--isir {
+  margin: 6px 0 0;
+  font-size: var(--text-xs, 12px);
+  font-weight: 400;
+  line-height: 1.4;
+}
+
 .muted {
   color: var(--text-sub);
 }
@@ -863,147 +967,183 @@ function onNext() { router.push(getNextPath('/keyword-targeting')) }
   margin-top: 2px;
 }
 
-.icon-add {
-  width: 32px;
-  height: 32px;
-  border-radius: var(--radius-sm, 4px);
-  border: 1px solid var(--border);
-  background: var(--bg-card);
-  color: var(--primary, #1876ff);
-  font-size: 16px;
-  line-height: 1;
-  cursor: pointer;
-  font-family: inherit;
-  transition: background 0.15s, border-color 0.15s, color 0.15s;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.icon-add:hover:not(:disabled) {
-  background: var(--primary-light, #eff6ff);
-  border-color: var(--primary-border, #bfdbfe);
-}
-
-/* 已添加状态：绿色对勾，禁用交互 */
-.icon-add.added {
-  color: var(--color-success, #22c55e);
-  border-color: hsl(142, 71%, 80%);
-  background: hsl(142, 71%, 97%);
-  cursor: default;
-  opacity: 1;
-}
-
-.pagination {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 12px;
-  margin-top: 16px;
-  padding-top: 12px;
-  border-top: 1px solid #f1f5f9;
-}
-
-.page-info {
-  font-size: 13px;
-  color: var(--text-sub);
-}
-
-.page-btns {
-  display: flex;
-  gap: 4px;
-}
-
-.page-btn {
-  min-width: 32px;
-  height: 32px;
-  padding: 0 8px;
-  border: 1px solid var(--border);
-  background: #fff;
-  border-radius: 4px;
-  font-size: 13px;
-  cursor: pointer;
-  font-family: inherit;
-}
-
-.page-btn.active {
-  border-color: #1876ff;
-  color: #1876ff;
-  background: #eff6ff;
-}
-
-.page-btn:disabled {
-  opacity: 0.45;
-  cursor: not-allowed;
-}
-
-.page-size {
-  height: 32px;
-  padding: 0 8px;
-  border: 1px solid var(--border);
-  border-radius: 4px;
-  font-size: 13px;
-}
-
-.manual-panel {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-}
-
-.manual-textarea {
-  width: 100%;
-  min-height: 200px;
-  padding: 12px 14px;
-  border: 1px solid #d0d5dd;
-  border-radius: 6px;
-  font-size: 14px;
-  resize: vertical;
-  font-family: inherit;
-}
-
-.manual-textarea::placeholder {
-  color: #94a3b8;
-}
-
-.manual-actions {
-  display: flex;
-  justify-content: flex-end;
-}
-
-.primary-btn {
-  height: 40px;
-  padding: 0 20px;
-  background: #1876ff;
-  color: #fff;
+/* 与 Negative「Exclude brands」行内文字按钮一致 */
+.eb-exclude-btn {
+  background: none;
   border: none;
-  border-radius: 4px;
+  color: #1876ff;
   font-size: 14px;
   font-weight: 500;
   cursor: pointer;
+  padding: 0;
   font-family: inherit;
-}
-
-.primary-btn:hover {
-  background: #0f5fd4;
-}
-
-.kt-right {
-  width: 42%;
-  min-width: 280px;
+  transition: opacity 0.15s;
   flex-shrink: 0;
-  display: flex;
-  flex-direction: column;
-  background: #fff;
+  white-space: nowrap;
+}
+
+.eb-exclude-btn:hover:not(:disabled) {
+  opacity: 0.7;
+}
+
+.eb-exclude-btn:disabled {
+  color: var(--text-sub);
+  opacity: 1;
+  cursor: default;
 }
 
 .kt-right-head {
+  grid-column: 2;
+  grid-row: 1;
+  align-self: stretch;
+  display: flex;
+  align-items: center;
+  padding: 12px 20px;
+  border-bottom: 1px solid var(--border);
+  box-sizing: border-box;
+}
+
+.kt-added-toolbar {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 12px 16px;
-  border-bottom: 1px solid var(--border);
-  min-height: 49px;
+  gap: 12px;
+  box-sizing: border-box;
+  flex-shrink: 0;
+  min-height: 64px;
+  padding: 18px 20px;
+}
+
+.add-keyword-lite-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  margin: 0;
+  padding: 0;
+  border: none;
+  background: none;
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 1.25;
+  color: #1876ff;
+  cursor: pointer;
+  transition: opacity 0.15s;
+}
+
+.add-keyword-lite-btn:hover {
+  opacity: 0.75;
+}
+
+.add-keyword-lite-btn__plus {
+  font-size: 15px;
+  font-weight: 500;
+  line-height: 1;
+}
+
+.remove-all-text-btn {
+  margin: 0;
+  padding: 0;
+  border: none;
+  background: none;
+  color: var(--text-sub);
+  font-size: 15px;
+  font-weight: 500;
+  line-height: 1.25;
+  cursor: pointer;
+  font-family: inherit;
+  transition: color 0.15s;
+}
+
+.remove-all-text-btn:hover {
+  color: #ef4444;
+}
+
+/* 手动行：与 Negative keyword 表内输入一致的极简样式 */
+.added-table tbody td:first-child {
+  min-width: 160px;
+}
+
+.added-kw-input {
+  box-sizing: border-box;
+  width: 100%;
+  min-width: 0;
+  height: 36px;
+  padding: 0 4px;
+  border: none;
+  border-radius: 0;
+  font-size: 14px;
+  font-family: inherit;
+  color: var(--text-main);
+  background: transparent;
+  outline: none;
+}
+
+.added-kw-input::placeholder {
+  color: #c0c8d8;
+}
+
+.added-match-select {
+  min-width: 0;
+  width: fit-content;
+  max-width: 100%;
+}
+
+.added-match-select :deep(.ui-select-wrap) {
+  width: auto;
+  min-width: 0;
+  max-width: 100%;
+  display: inline-block;
+  vertical-align: middle;
+}
+
+.added-match-select :deep(.ui-select-trigger) {
+  border: none;
+  background: transparent;
+  box-shadow: none;
+  padding-left: 0;
+  padding-right: 2px;
+  width: auto;
+  min-width: 0;
+  justify-content: flex-start;
+  gap: 2px;
+}
+
+.added-match-select :deep(.ui-select-value) {
+  flex: 0 1 auto;
+}
+
+.added-match-select :deep(.ui-select-trigger:hover) {
+  border-color: transparent;
+}
+
+.added-match-select :deep(.ui-select-trigger:focus-visible) {
+  outline: none;
+  border-color: transparent;
+  box-shadow: none;
+}
+
+.added-match-select :deep(.ui-select-chevron) {
+  color: #94a3b8;
+}
+
+/* 已添加表内出价列：全部极简（与手动行一致） */
+.added-table .bid-input-wrap--minimal {
+  border: none;
+  background: transparent;
+  padding: 0 4px;
+  height: auto;
+  min-height: 32px;
+  display: inline-flex;
+  align-items: center;
+  max-width: 100%;
+}
+
+.added-table .bid-input-wrap--minimal .bid-input {
+  flex: 1 1 auto;
+  width: 72px;
+  min-width: 56px;
+  max-width: 100%;
 }
 
 .added-title {
@@ -1024,6 +1164,9 @@ function onNext() { router.push(getNextPath('/keyword-targeting')) }
 
 .empty-block.tight {
   min-height: 200px;
+  padding-left: 20px;
+  padding-right: 20px;
+  box-sizing: border-box;
 }
 
 .empty-text {
@@ -1041,14 +1184,12 @@ function onNext() { router.push(getNextPath('/keyword-targeting')) }
   line-height: 1.5;
 }
 
+/* 与左侧 .kt-panel 一致：左右 20px、底 14px */
 .added-table-wrap {
   flex: 1;
   overflow: auto;
-}
-
-.added-table .check-col {
-  width: 40px;
-  text-align: center;
+  padding: 0 20px 14px;
+  box-sizing: border-box;
 }
 
 .icon-remove {
@@ -1066,6 +1207,5 @@ function onNext() { router.push(getNextPath('/keyword-targeting')) }
 
 .icon-remove:hover {
   color: #ef4444;
-  background: #fef2f2;
 }
 </style>

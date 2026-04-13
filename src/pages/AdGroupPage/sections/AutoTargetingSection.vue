@@ -9,63 +9,67 @@
 
     <hr />
 
-    <p class="section-label">Set bid pricing</p>
+    <div class="blocks">
+      <!-- 1. Default bid first（与 Campaign Bid adjustment 中 Assuming a base bid 同源：adGroupBid） -->
+      <div class="bid-block">
+        <div class="label-row">
+          <label>Set default bid</label>
+          <div class="tooltip-wrap">
+            <img :src="iconHelpCircle" alt="" width="16" height="16" class="help-icon-trigger" />
+            <div class="tooltip-bubble">
+              Default bid applies to all clicks unless you set a different bid for a keyword.
+            </div>
+          </div>
+        </div>
+        <div class="default-bid-wrap">
+          <InlineNumberInput
+            v-model="form.adGroupBid"
+            :step="0.01"
+            suffix="USD"
+            size="lg"
+            class="bid-input"
+          />
+        </div>
+      </div>
 
-    <div class="options">
-      <RadioCard v-model="form.autoTargetBidMode" value="by_group">
-        <p class="option-title">Set bids by targeting group</p>
-        <p class="option-desc">
-          Targeting groups use multiple strategies to match your ads to shoppers looking for your products.
-        </p>
-
-        <Transition name="slide">
-          <div v-if="form.autoTargetBidMode === 'by_group'" class="groups">
-            <div v-for="g in groups" :key="g.key" class="group-row">
-              <button
-                class="toggle"
-                :class="{ on: form.autoGroups[g.key].enabled }"
-                type="button"
-                @click.stop="form.autoGroups[g.key].enabled = !form.autoGroups[g.key].enabled"
-              >
-                <span class="knob"></span>
-              </button>
-              <div class="group-fields">
-                <p class="group-name">{{ g.label }}</p>
-                <div v-if="form.autoGroups[g.key].enabled" class="bid-row">
-                  <span class="bid-label">
-                    Bid
-                    <img :src="iconHelpCircle" alt="" width="16" height="16" />
-                  </span>
-                  <InlineNumberInput
-                    :model-value="form.autoGroups[g.key].bid"
-                    @update:model-value="onBidInput(g.key, $event)"
-                    :step="0.01"
-                    suffix="USD"
-                    size="lg"
-                    class="bid-input"
-                  />
-                </div>
+      <!-- 2. Targeting groups：始终展开 -->
+      <div class="bid-block">
+        <div class="label-row">
+          <label>Set bids by targeting group</label>
+          <div class="tooltip-wrap">
+            <img :src="iconHelpCircle" alt="" width="16" height="16" class="help-icon-trigger" />
+            <div class="tooltip-bubble">
+              Targeting groups use multiple strategies to match your ads to shoppers looking for your products.
+            </div>
+          </div>
+        </div>
+        <div class="groups">
+          <div v-for="g in groups" :key="g.key" class="group-row">
+            <button
+              class="toggle"
+              :class="{ on: form.autoGroups[g.key].enabled }"
+              type="button"
+              @click="form.autoGroups[g.key].enabled = !form.autoGroups[g.key].enabled"
+            >
+              <span class="knob"></span>
+            </button>
+            <div class="group-fields">
+              <p class="group-name">{{ g.label }}</p>
+              <div v-if="form.autoGroups[g.key].enabled" class="bid-row">
+                <span class="bid-label">Bid</span>
+                <InlineNumberInput
+                  :model-value="form.autoGroups[g.key].bid"
+                  @update:model-value="onBidInput(g.key, $event)"
+                  :step="0.01"
+                  suffix="USD"
+                  size="lg"
+                  class="bid-input"
+                />
               </div>
             </div>
           </div>
-        </Transition>
-      </RadioCard>
-
-      <RadioCard v-model="form.autoTargetBidMode" value="default">
-        <p class="option-title">Set default bid</p>
-        <p class="option-desc">Default bid applies to all clicks unless you set a different bid for a keyword.</p>
-        <Transition name="slide">
-          <div v-if="form.autoTargetBidMode === 'default'" class="default-bid-wrap">
-            <InlineNumberInput
-              v-model="form.autoDefaultBid"
-              :step="0.01"
-              suffix="USD"
-              size="lg"
-              class="bid-input"
-            />
-          </div>
-        </Transition>
-      </RadioCard>
+        </div>
+      </div>
     </div>
   </section>
 </template>
@@ -74,7 +78,6 @@
 import { reactive, watch } from 'vue'
 import { storeToRefs } from 'pinia'
 import { useCampaignStore } from '@/stores/campaign'
-import RadioCard from '@/components/base/RadioCard.vue'
 import InlineNumberInput from '@/components/base/InlineNumberInput.vue'
 import iconHelpCircle from '@/assets/icon-help-circle.svg'
 
@@ -91,13 +94,17 @@ const touched = reactive({
   closeMatch: false, looseMatch: false, substitutes: false, complements: false
 })
 
-watch(() => form.value.adGroupBid, (newBid) => {
-  for (const g of groups) {
-    if (!touched[g.key]) {
-      form.value.autoGroups[g.key].bid = newBid
+watch(
+  () => form.value.adGroupBid,
+  (newBid) => {
+    for (const g of groups) {
+      if (!touched[g.key]) {
+        form.value.autoGroups[g.key].bid = newBid
+      }
     }
-  }
-}, { immediate: true })
+  },
+  { immediate: true }
+)
 
 function onBidInput(key, val) {
   touched[key] = true
@@ -139,31 +146,78 @@ hr {
   margin: 0 0 20px;
 }
 
-.section-label {
-  margin: 0 0 12px;
-  font-size: var(--text-base, 14px);
-  font-weight: 600;
-  color: var(--text-main);
-}
-
-.options {
+.blocks {
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 28px;
 }
 
-.option-title {
-  margin: 0;
-  font-size: var(--text-md, 15px);
+.bid-block {
+  padding: 0;
+  border: none;
+  background: transparent;
+}
+
+/* 与 Campaign Settings · Daily budget 一致：标题 + 问号 + 悬停说明 */
+.label-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 10px;
+  font-size: var(--text-base, 14px);
   font-weight: 600;
   color: var(--text-main);
 }
 
-.option-desc {
-  margin: 4px 0 0;
-  font-size: var(--text-base, 14px);
-  color: var(--text-sub);
-  line-height: 1.55;
+.label-row label {
+  margin: 0;
+  cursor: default;
+}
+
+.help-icon-trigger {
+  cursor: pointer;
+  flex-shrink: 0;
+  display: block;
+}
+
+.tooltip-wrap {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+}
+
+.tooltip-bubble {
+  display: none;
+  position: absolute;
+  left: 24px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: #1c1f23;
+  color: #fff;
+  font-size: var(--text-sm, 13px);
+  font-weight: 400;
+  line-height: 1.6;
+  padding: 10px 14px;
+  border-radius: var(--radius-md, 6px);
+  width: 280px;
+  z-index: 999;
+  box-shadow: var(--shadow-md);
+  pointer-events: none;
+}
+
+.tooltip-bubble::before {
+  content: '';
+  position: absolute;
+  left: -6px;
+  top: 50%;
+  transform: translateY(-50%);
+  border-width: 6px 6px 6px 0;
+  border-style: solid;
+  border-color: transparent #1c1f23 transparent transparent;
+}
+
+.tooltip-wrap:hover .tooltip-bubble {
+  display: block;
 }
 
 .bid-input {
@@ -171,12 +225,12 @@ hr {
   width: 100%;
 }
 
-.default-bid-wrap .bid-input {
-  margin-top: 12px;
+.default-bid-wrap {
+  margin-top: 0;
 }
 
 .groups {
-  margin-top: 20px;
+  margin-top: 0;
   display: flex;
   flex-direction: column;
   gap: 24px;
@@ -249,20 +303,5 @@ hr {
   font-size: var(--text-base, 14px);
   font-weight: 600;
   color: var(--text-main);
-}
-
-.default-bid-wrap {
-  margin-top: 4px;
-}
-
-.slide-enter-active,
-.slide-leave-active {
-  transition: opacity 0.2s, transform 0.2s;
-}
-
-.slide-enter-from,
-.slide-leave-to {
-  opacity: 0;
-  transform: translateY(-6px);
 }
 </style>

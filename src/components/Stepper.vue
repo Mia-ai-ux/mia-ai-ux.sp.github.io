@@ -207,16 +207,19 @@ function goToStep(path) {
   font-size: var(--text-base, 14px);
   font-weight: 500;
   color: var(--gray-400, #94a3b8);
+  display: block;
   height: 28px;
-  display: flex;
-  align-items: center;
-  line-height: 1;
+  line-height: 28px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
   transition: color 0.2s, font-weight 0.2s;
   background: none;
   border: none;
   padding: 0;
   text-align: left;
   width: 100%;
+  max-width: 100%;
 }
 
 .stepper-title--clickable {

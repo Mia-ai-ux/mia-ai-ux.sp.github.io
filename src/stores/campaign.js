@@ -27,36 +27,34 @@ export const useCampaignStore = defineStore('campaign', () => {
     adGroupName: `Ad group-${dateStr}`,
     adGroupBid: 7.5,
 
-    // products selected
+    // Ad group products: { id, asin, title, image, rating, reviews, originalPrice, price, inStock }
     products: [],
 
-    // Automatic targeting – Set bids by targeting group
-    autoTargetBidMode: 'by_group',   // 'by_group' | 'default'
+    // Automatic targeting – per group + default (default uses adGroupBid, same as Bid adjustment base)
     autoGroups: {
       closeMatch:   { enabled: true,  bid: 0 },
       looseMatch:   { enabled: true,  bid: 0 },
       substitutes:  { enabled: true,  bid: 0 },
       complements:  { enabled: true,  bid: 0 }
     },
-    autoDefaultBid: 0,
 
     // Manual targeting
     manualTargetType: 'keyword',   // 'keyword' | 'product'
 
     // Keyword targeting step (UI state)
-    keywordTargetTab: 'amazon',    // 'amazon' | 'library' | 'campaigns' | 'manual'
+    keywordTargetTab: 'amazon',    // 'amazon' | 'campaigns'
     keywordTargetingDefaultBid: 0.07,
     keywordTargetingMatchTypes: { exact: true, broad: false, phrase: false },
     keywordSelectedCampaignId: '',
     keywordSelectedAdGroupId: '',
 
     // Negative targeting
-    negativeKeywords: [],    // [{ id, keyword, matchType }]
+    negativeKeywords: [],    // [{ id, keyword, matchType: 'Negative Exact' | 'Negative Phrase' }]
     excludedProducts: [],    // [{ id, image, title, rating, reviews, originalPrice, price, asin }]
     excludedBrands: [],      // [{ id, name }]
 
     // Keyword targeting — added keywords (right panel)
-    // { id, text, subtitle?, matchType, is?, ir?, suggestBid, suggestRange, bid, checked }
+    // { id, text, subtitle?, matchType, is?, ir?, suggestBid, suggestRange, bid, manual?: boolean }
     keywords: [],
 
     // Pool for targeting library tab (mock)
@@ -88,7 +86,6 @@ export const useCampaignStore = defineStore('campaign', () => {
     form.value.bidMode = 'fixed'
     form.value.targeting = 'auto'
     form.value.scheduleType = 'continuous'
-    form.value.autoTargetBidMode = 'by_group'
     form.value.manualTargetType = 'keyword'
   }
 

@@ -1,5 +1,5 @@
 <template>
-  <header class="top-nav" :class="{ scrolled: isScrolled }">
+  <header class="top-nav">
     <div class="nav-left">
       <div class="brand">
         <img :src="logoUrl" alt="飞轮" class="brand-logo" />
@@ -21,22 +21,12 @@
 </template>
 
 <script setup>
-import { ref, onMounted, onUnmounted } from 'vue'
 import logoUrl from '@/assets/logo.png'
 
 defineProps({
   userName: { type: String, default: '' },
   pageTitle: { type: String, default: '' }
 })
-
-const isScrolled = ref(false)
-
-function onScroll() {
-  isScrolled.value = window.scrollY > 4
-}
-
-onMounted(() => window.addEventListener('scroll', onScroll, { passive: true }))
-onUnmounted(() => window.removeEventListener('scroll', onScroll))
 </script>
 
 <style scoped>
@@ -51,11 +41,6 @@ onUnmounted(() => window.removeEventListener('scroll', onScroll))
   align-items: center;
   justify-content: space-between;
   padding: 0 24px;
-  transition: box-shadow 0.2s;
-}
-
-.top-nav.scrolled {
-  box-shadow: var(--shadow-sm);
 }
 
 .nav-left {

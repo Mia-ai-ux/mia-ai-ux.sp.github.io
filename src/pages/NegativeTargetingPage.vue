@@ -1,10 +1,14 @@
 <template>
   <div class="page-layout">
     <div class="page-center">
-      <Stepper :steps="steps" :current-step="getStepNumber('/negative-targeting')" />
+      <Stepper
+        :steps="steps"
+        :current-step="getStepNumber('/negative-targeting')"
+        :active-sub-item="activeSubItem"
+      />
 
       <div class="content-wrapper">
-        <h2 class="page-title">Negative Targeting</h2>
+        <h2 class="page-title">Negative（optional）</h2>
         <main class="main-content">
 
           <!-- ── Negative Keyword ── -->
@@ -18,9 +22,16 @@
               </span>
             </h3>
 
-            <!-- Row 3: + Add keyword | Remove all -->
+            <!-- Row 3: Add | Remove all (add button matches Product section) -->
             <div class="toolbar-row">
-              <button class="add-link-btn" type="button" @click="addRow">+ Add keyword</button>
+              <button class="add-btn" type="button" @click="addRow">
+                <span class="add-icon">
+                  <svg width="12" height="12" viewBox="0 0 10 10" fill="none" aria-hidden="true">
+                    <path d="M5 1v8M1 5h8" stroke="#fff" stroke-width="1.8" stroke-linecap="round" />
+                  </svg>
+                </span>
+                Add
+              </button>
               <button
                 v-if="form.negativeKeywords.length > 0"
                 class="remove-all-btn"
@@ -45,6 +56,7 @@
                   <tr v-for="row in form.negativeKeywords" :key="row.id">
                     <td class="col-kw">
                       <input
+                        :id="'negative-kw-' + row.id"
                         v-model="row.keyword"
                         class="kw-input"
                         type="text"
@@ -54,8 +66,8 @@
                     <td class="col-match">
                       <div class="match-select-wrap">
                         <select v-model="row.matchType" class="match-select">
-                          <option value="Exact">Exact</option>
-                          <option value="Phrase">Phrase</option>
+                          <option value="Negative Exact">Negative Exact</option>
+                          <option value="Negative Phrase">Negative Phrase</option>
                         </select>
                         <svg class="select-chevron" width="12" height="12" viewBox="0 0 12 12" fill="none">
                           <path d="M2 4l4 4 4-4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
@@ -99,7 +111,6 @@
                     :key="product.id"
                     class="ep-product-row"
                     :class="{ selected: isExcluded(product.id) }"
-                    @click="toggleProduct(product)"
                   >
                     <div class="ep-product-card">
                       <div class="ep-thumb">
@@ -125,11 +136,13 @@
                         </div>
                       </div>
                     </div>
-                    <div class="ep-checkbox" :class="{ checked: isExcluded(product.id) }">
-                      <svg v-if="isExcluded(product.id)" width="10" height="10" viewBox="0 0 10 10" fill="none">
-                        <path d="M1.5 5l2.5 2.5 4.5-5" stroke="#fff" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-                      </svg>
-                    </div>
+                    <button
+                      class="eb-exclude-btn"
+                      type="button"
+                      @click="toggleProduct(product)"
+                    >
+                      {{ isExcluded(product.id) ? 'Added' : 'Exclude' }}
+                    </button>
                   </div>
                   <p v-if="filteredProducts.length === 0" class="ep-empty">No products found.</p>
                 </div>
@@ -167,9 +180,9 @@
                         </div>
                       </div>
                     </div>
-                    <button class="ep-delete" type="button" @click="removeProduct(product.id)">
-                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-                        <polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4h6v2"/>
+                    <button class="eb-close-btn" type="button" aria-label="Remove product" @click="removeProduct(product.id)">
+                      <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                        <path d="M2 2l10 10M12 2L2 12" />
                       </svg>
                     </button>
                   </div>
@@ -251,7 +264,7 @@
 </template>
 
 <script setup>
-import { ref, computed } from 'vue'
+import { ref, computed, onMounted, onUnmounted, nextTick } from 'vue'
 import { useRouter } from 'vue-router'
 import { storeToRefs } from 'pinia'
 import { useCampaignStore } from '@/stores/campaign'
@@ -264,9 +277,46 @@ const router = useRouter()
 const { steps, getStepNumber, getNextPath, getBackPath } = useFlowSteps()
 const { form } = storeToRefs(useCampaignStore())
 
+/** 与 useFlowSteps negativeSubItems 的 label / anchorId 一致，供侧栏子项高亮 */
+const negativeStepSubItems = [
+  { label: 'Negative keyword', anchorId: 'section-negative-keyword' },
+  { label: 'Exclude products', anchorId: 'section-negative-product' },
+  { label: 'Exclude brands', anchorId: 'section-negative-brand' }
+]
+
+const activeSubItem = ref('Negative keyword')
+
+let sectionObserver = null
+onMounted(() => {
+  const sectionEls = negativeStepSubItems
+    .map((s) => ({ label: s.label, el: document.getElementById(s.anchorId) }))
+    .filter((s) => s.el)
+
+  sectionObserver = new IntersectionObserver(
+    (entries) => {
+      for (const entry of entries) {
+        if (entry.isIntersecting) {
+          const matched = sectionEls.find((s) => s.el === entry.target)
+          if (matched) activeSubItem.value = matched.label
+        }
+      }
+    },
+    { rootMargin: '-20% 0px -60% 0px', threshold: 0 }
+  )
+  sectionEls.forEach((s) => sectionObserver.observe(s.el))
+})
+
+onUnmounted(() => {
+  sectionObserver?.disconnect()
+})
+
 // ── Negative Keyword ──
 function addRow() {
-  form.value.negativeKeywords.push({ id: Date.now() + Math.random(), keyword: '', matchType: 'Exact' })
+  const id = Date.now() + Math.random()
+  form.value.negativeKeywords.push({ id, keyword: '', matchType: 'Negative Exact' })
+  nextTick(() => {
+    document.getElementById(`negative-kw-${id}`)?.focus()
+  })
 }
 function removeRow(id) {
   form.value.negativeKeywords = form.value.negativeKeywords.filter(r => r.id !== id)
@@ -417,7 +467,7 @@ function onNext()   { router.push(getNextPath('/negative-targeting')) }
 /* ── Toolbar row ── */
 .toolbar-row {
   display: flex;
-  align-items: center;
+  align-items: flex-end;
   justify-content: space-between;
   margin-bottom: -8px;
 }
@@ -436,16 +486,18 @@ function onNext()   { router.push(getNextPath('/negative-targeting')) }
 .remove-all-btn {
   background: none;
   border: none;
-  color: var(--primary);
+  color: var(--text-sub);
   font-size: 15px;
   font-weight: 500;
   cursor: pointer;
   padding: 4px 0;
   font-family: inherit;
-  transition: opacity 0.15s;
+  transition: color 0.15s;
 }
 
-.remove-all-btn:hover { opacity: 0.7; }
+.remove-all-btn:hover {
+  color: #ef4444;
+}
 
 /* ── Table (shadcn style) ── */
 .kw-table-wrap {
@@ -486,8 +538,8 @@ function onNext()   { router.push(getNextPath('/negative-targeting')) }
 .kw-table tbody tr:last-child td { border-bottom: none; }
 .kw-table tbody tr:hover { background: rgba(0,0,0,0.025); }
 
-.col-kw     { width: auto; }
-.col-match  { width: 140px; }
+.col-kw     { width: 30%; }
+.col-match  { width: 200px; }
 .col-action { width: 72px; text-align: right; }
 
 /* ── Keyword input ── */
@@ -537,16 +589,18 @@ function onNext()   { router.push(getNextPath('/negative-targeting')) }
 .delete-btn {
   background: none;
   border: none;
-  color: #1876ff;
+  color: var(--text-sub);
   font-size: 15px;
   font-weight: 500;
   cursor: pointer;
   padding: 0;
   font-family: inherit;
-  transition: opacity 0.15s;
+  transition: color 0.15s;
 }
 
-.delete-btn:hover { opacity: 0.65; }
+.delete-btn:hover {
+  color: #ef4444;
+}
 
 /* ── Help icon + tooltip ── */
 .help-wrap {
@@ -597,21 +651,39 @@ function onNext()   { router.push(getNextPath('/negative-targeting')) }
 
 .help-wrap:hover .help-tooltip { display: block; }
 
-/* ── Add link button ── */
-.add-link-btn {
-  background: none;
+/* Add button — same as ProductSection .add-btn */
+.add-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: #e8e8e8;
   border: none;
-  color: #1876ff;
-  font-size: 16px;
+  border-radius: 18px;
+  height: 36px;
+  padding: 0 16px 0 6px;
+  font-size: var(--text-base, 14px);
   font-weight: 500;
+  color: #424244;
   cursor: pointer;
-  padding: 0;
+  transition: background 0.15s;
   font-family: inherit;
-  align-self: flex-start;
-  transition: opacity 0.15s;
+  box-sizing: border-box;
 }
 
-.add-link-btn:hover { opacity: 0.7; }
+.add-btn:hover {
+  background: #d8d8d8;
+}
+
+.add-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: #424244;
+  flex-shrink: 0;
+}
 
 /* ── Exclude Products ── */
 .ep-card { gap: 16px; }
@@ -620,10 +692,14 @@ function onNext()   { router.push(getNextPath('/negative-targeting')) }
   /* 商品 / 品牌列表卡片与缩略图底：与设计稿一致 */
   --ep-list-surface: #f8f8f8;
   --ep-list-hover: #f0f0f0;
+  /* 与 .ep-search-bar 上下 padding 24+24 + 输入行 36 对齐，使左右列表起点一致 */
+  --ep-column-header-height: 84px;
   display: flex;
+  align-items: stretch;
   gap: 0;
   min-height: 400px;
   overflow: hidden;
+  border-top: 1px solid #e2e8f0;
 }
 
 /* Left panel */
@@ -632,6 +708,7 @@ function onNext()   { router.push(getNextPath('/negative-targeting')) }
   min-width: 0;
   display: flex;
   flex-direction: column;
+  padding-right: 32px;
   border-right: 1px solid #e2e8f0;
 }
 
@@ -639,8 +716,11 @@ function onNext()   { router.push(getNextPath('/negative-targeting')) }
   display: flex;
   align-items: center;
   gap: 0;
-  padding: 8px 14px;
-  border-top: 1px solid #e2e8f0;
+  margin: 0;
+  padding: 24px 0;
+  box-sizing: border-box;
+  min-height: var(--ep-column-header-height);
+  flex-shrink: 0;
 }
 
 .ep-search {
@@ -683,25 +763,33 @@ function onNext()   { router.push(getNextPath('/negative-targeting')) }
 .ep-results {
   flex: 1;
   overflow-y: auto;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
 }
 
 .ep-product-row {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   gap: 12px;
   padding: 16px;
-  margin: 12px 14px 0;
   border-radius: 4px;
   border: 1px solid transparent;
   background: var(--ep-list-surface);
-  cursor: pointer;
+  cursor: default;
   transition: border-color 0.15s, background 0.15s;
 }
-.ep-product-row:first-child { margin-top: 12px; }
-.ep-product-row:hover { background: var(--ep-list-hover); }
+.ep-product-row:hover:not(.selected) { background: var(--ep-list-hover); }
 .ep-product-row.selected {
   background: #fff;
   border-color: var(--selected-border);
+}
+
+.ep-product-row .eb-exclude-btn {
+  align-self: center;
+  flex-shrink: 0;
 }
 
 /* Right panel */
@@ -710,15 +798,17 @@ function onNext()   { router.push(getNextPath('/negative-targeting')) }
   flex-shrink: 0;
   display: flex;
   flex-direction: column;
+  padding-left: 12px;
 }
 
 .ep-right-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 10px 14px;
-  border-top: 1px solid #e2e8f0;
-  min-height: 43px;
+  padding: 24px 14px;
+  box-sizing: border-box;
+  min-height: var(--ep-column-header-height);
+  flex-shrink: 0;
 }
 
 .ep-added-count {
@@ -730,31 +820,41 @@ function onNext()   { router.push(getNextPath('/negative-targeting')) }
 .ep-remove-all {
   background: none;
   border: none;
-  color: #1876ff;
+  color: var(--text-sub);
   font-size: 13px;
   font-weight: 500;
   cursor: pointer;
   padding: 0;
   font-family: inherit;
-  transition: opacity 0.15s;
+  transition: color 0.15s;
 }
 
-.ep-remove-all:hover { opacity: 0.7; }
+.ep-remove-all:hover {
+  color: #ef4444;
+}
 
 .ep-added-list {
   flex: 1;
   overflow-y: auto;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
 }
 
 .ep-added-row {
   display: flex;
-  align-items: center;
-  gap: 8px;
+  align-items: flex-start;
+  gap: 12px;
   padding: 16px;
-  margin: 12px 14px 0;
   border-radius: 4px;
   border: 1px solid transparent;
   background: var(--ep-list-surface);
+}
+
+.ep-added-row .eb-close-btn {
+  align-self: center;
 }
 
 /* Product card shared */
@@ -833,44 +933,6 @@ function onNext()   { router.push(getNextPath('/negative-targeting')) }
 .ep-stock { color: #999; }
 .ep-asin { color: #999; }
 
-/* Checkbox */
-.ep-checkbox {
-  width: 16px;
-  height: 16px;
-  border-radius: 3px;
-  border: 1px solid #dcdcdc;
-  background: rgba(255,255,255,0.9);
-  flex-shrink: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: background 0.15s, border-color 0.15s;
-}
-
-.ep-checkbox.checked {
-  background: #1876ff;
-  border-color: #1876ff;
-}
-
-/* Delete button */
-.ep-delete {
-  background: none;
-  border: none;
-  color: #94a3b8;
-  cursor: pointer;
-  padding: 4px;
-  flex-shrink: 0;
-  display: flex;
-  align-items: center;
-  border-radius: 4px;
-  transition: color 0.15s, background 0.15s;
-}
-
-.ep-delete:hover {
-  color: #ef4444;
-  background: #fef2f2;
-}
-
 /* Empty states */
 .ep-empty, .ep-empty-right {
   padding: 24px 16px;
@@ -886,7 +948,6 @@ function onNext()   { router.push(getNextPath('/negative-targeting')) }
   align-items: center;
   justify-content: space-between;
   padding: 16px;
-  margin: 12px 14px 0;
   border-radius: 4px;
   border: 1px solid transparent;
   background: var(--ep-list-surface);
@@ -928,7 +989,6 @@ function onNext()   { router.push(getNextPath('/negative-targeting')) }
   align-items: center;
   justify-content: space-between;
   padding: 16px;
-  margin: 12px 14px 0;
   border-radius: 4px;
   border: 1px solid transparent;
   background: var(--ep-list-surface);
@@ -944,11 +1004,10 @@ function onNext()   { router.push(getNextPath('/negative-targeting')) }
   display: flex;
   align-items: center;
   border-radius: 4px;
-  transition: color 0.15s, background 0.15s;
+  transition: color 0.15s;
 }
 
 .eb-close-btn:hover {
-  color: #111;
-  background: rgba(0, 0, 0, 0.06);
+  color: #ef4444;
 }
 </style>

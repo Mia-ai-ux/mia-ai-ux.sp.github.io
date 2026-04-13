@@ -8,7 +8,6 @@
         <main class="main-content">
           <AdGroupNameSection />
           <ProductSection />
-          <AdGroupBidSection />
           <AutoTargetingSection />
         </main>
       </div>
@@ -26,7 +25,6 @@ import Stepper from '@/components/Stepper.vue'
 import BottomBar from '@/components/BottomBar.vue'
 import AdGroupNameSection from './sections/AdGroupNameSection.vue'
 import ProductSection from './sections/ProductSection.vue'
-import AdGroupBidSection from './sections/AdGroupBidSection.vue'
 import AutoTargetingSection from './sections/AutoTargetingSection.vue'
 import { useFlowSteps } from '@/composables/useFlowSteps'
 
@@ -35,9 +33,8 @@ const store = useCampaignStore()
 const { steps, getStepNumber, getNextPath, getBackPath } = useFlowSteps()
 
 const subItems = [
-  { label: 'Ad group name',  anchorId: 'section-ad-group-name' },
-  { label: 'Product',        anchorId: 'section-product' },
-  { label: 'Ad group bid',   anchorId: 'section-ad-group-bid' },
+  { label: 'Ad group name',   anchorId: 'section-ad-group-name' },
+  { label: 'Product',         anchorId: 'section-product' },
   { label: 'Set bid pricing', anchorId: 'section-auto-targeting' }
 ]
 

@@ -10,15 +10,13 @@ const campaignSubItems = [
 ]
 
 const autoAdGroupSubItems = [
-  { label: 'Ad group name',  anchorId: 'section-ad-group-name' },
-  { label: 'Product',        anchorId: 'section-product' },
-  { label: 'Ad group bid',   anchorId: 'section-ad-group-bid' },
+  { label: 'Ad group name',   anchorId: 'section-ad-group-name' },
+  { label: 'Product',         anchorId: 'section-product' },
   { label: 'Set bid pricing', anchorId: 'section-auto-targeting' }
 ]
 
 const manualAdGroupSubItems = [
   { label: 'Ad group name',    anchorId: 'section-ad-group-name' },
-  { label: 'Ad group bid',     anchorId: 'section-ad-group-bid' },
   { label: 'Product',          anchorId: 'section-product' },
   { label: 'Manual Targeting', anchorId: 'section-manual-targeting' }
 ]
@@ -42,8 +40,8 @@ export function useFlowSteps() {
       return [
         { step: 1, label: 'Campaign Plan',      path: '/campaign',            subItems: campaignSubItems },
         { step: 2, label: 'Ad Group',           path: '/ad-group/auto',       subItems: autoAdGroupSubItems },
-        { step: 3, label: 'Negative targeting', path: '/negative-targeting',  subItems: negativeSubItems },
-        { step: 4, label: 'Targeting',          path: '/ad' }
+        { step: 3, label: 'Negative（optional）', path: '/negative-targeting',  subItems: negativeSubItems },
+        { step: 4, label: 'Launch campaign',  path: '/ad' }
       ]
     } else if (isKeyword) {
       // Manual + Keyword targeting → 5 steps
@@ -51,8 +49,8 @@ export function useFlowSteps() {
         { step: 1, label: 'Campaign Plan',      path: '/campaign',            subItems: campaignSubItems },
         { step: 2, label: 'Ad Group',           path: '/ad-group/manual',     subItems: manualAdGroupSubItems },
         { step: 3, label: 'Keyword targeting',  path: '/keyword-targeting' },
-        { step: 4, label: 'Negative targeting', path: '/negative-targeting',  subItems: negativeSubItems },
-        { step: 5, label: 'Targeting',          path: '/ad' }
+        { step: 4, label: 'Negative（optional）', path: '/negative-targeting',  subItems: negativeSubItems },
+        { step: 5, label: 'Launch campaign',  path: '/ad' }
       ]
     } else {
       // Manual + Product targeting → 5 steps
@@ -60,8 +58,8 @@ export function useFlowSteps() {
         { step: 1, label: 'Campaign Plan',      path: '/campaign',            subItems: campaignSubItems },
         { step: 2, label: 'Ad Group',           path: '/ad-group/manual',     subItems: manualAdGroupSubItems },
         { step: 3, label: 'Product targeting',  path: '/product-targeting' },
-        { step: 4, label: 'Negative targeting', path: '/negative-targeting',  subItems: negativeSubItems },
-        { step: 5, label: 'Targeting',          path: '/ad' }
+        { step: 4, label: 'Negative（optional）', path: '/negative-targeting',  subItems: negativeSubItems },
+        { step: 5, label: 'Launch campaign',  path: '/ad' }
       ]
     }
   })

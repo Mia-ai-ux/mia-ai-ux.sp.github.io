@@ -7,7 +7,6 @@
         <h2 class="page-title">Ad Group</h2>
         <main class="main-content">
           <AdGroupNameSection />
-          <AdGroupBidSection />
           <ProductSection />
           <ManualTargetingSection />
         </main>
@@ -25,7 +24,6 @@ import { useCampaignStore } from '@/stores/campaign'
 import Stepper from '@/components/Stepper.vue'
 import BottomBar from '@/components/BottomBar.vue'
 import AdGroupNameSection from './sections/AdGroupNameSection.vue'
-import AdGroupBidSection from './sections/AdGroupBidSection.vue'
 import ProductSection from './sections/ProductSection.vue'
 import ManualTargetingSection from './sections/ManualTargetingSection.vue'
 import { useFlowSteps } from '@/composables/useFlowSteps'
@@ -36,7 +34,6 @@ const { steps, getStepNumber, getNextPath, getBackPath } = useFlowSteps()
 
 const subItems = [
   { label: 'Ad group name',    anchorId: 'section-ad-group-name' },
-  { label: 'Ad group bid',     anchorId: 'section-ad-group-bid' },
   { label: 'Product',          anchorId: 'section-product' },
   { label: 'Manual Targeting', anchorId: 'section-manual-targeting' }
 ]
