@@ -42,7 +42,7 @@ export const useCampaignStore = defineStore('campaign', () => {
     manualTargetType: 'keyword',   // 'keyword' | 'product'
 
     // Keyword targeting step (UI state)
-    keywordTargetTab: 'amazon',    // 'amazon' | 'campaigns'
+    keywordTargetTab: 'campaigns',  // 'amazon' | 'campaigns'
     keywordTargetingDefaultBid: 0.07,
     keywordTargetingMatchTypes: { exact: true, broad: false, phrase: false },
     keywordSelectedCampaignId: '',

@@ -346,8 +346,8 @@ onMounted(() => {
 })
 
 const tabs = [
-  { id: 'amazon', label: 'Amazon Suggested' },
-  { id: 'campaigns', label: 'Select from campaigns' }
+  { id: 'campaigns', label: 'Select from campaigns' },
+  { id: 'amazon', label: 'Amazon Suggested' }
 ]
 
 const keywordAddedMatchTypeOptions = [
