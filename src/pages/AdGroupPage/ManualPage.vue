@@ -105,12 +105,6 @@ function onNext() {
     const el = document.getElementById(firstId)
     if (el) el.scrollIntoView({ behavior: 'smooth', block: 'center' })
 
-    toast({
-      title: 'Please complete required fields',
-      description: allErrors.map(e => e.label).join('、') + ' cannot be empty.',
-      variant: 'destructive',
-      duration: 5000
-    })
     return
   }
 

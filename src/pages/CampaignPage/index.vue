@@ -110,14 +110,6 @@ function onNext() {
     // Gate reactive red labels from this point on
     hasTriedToSubmit.value = true
 
-    // Toast: list all unfilled fields
-    const fieldNames = result.errorItems.map(e => e.label).join('、')
-    toast({
-      title: 'Please complete required fields',
-      description: `${fieldNames} cannot be empty or invalid.`,
-      variant: 'destructive',
-      duration: 5000
-    })
     return
   }
 
