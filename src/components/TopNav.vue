@@ -102,4 +102,11 @@ defineProps({
   font-size: var(--text-base, 14px);
   color: var(--text-sub);
 }
+
+@media (max-width: 767px) {
+  .top-nav { padding: 0 16px; }
+  .brand-version { display: none; }
+  .nav-divider { display: none; }
+  .nav-page-title { display: none; }
+}
 </style>

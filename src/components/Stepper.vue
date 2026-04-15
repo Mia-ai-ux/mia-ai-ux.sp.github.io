@@ -281,4 +281,16 @@ function goToStep(path) {
   min-height: 16px;
   flex: 1;
 }
+
+/* Tablet: hide labels, show only indicator dots */
+@media (max-width: 1023px) {
+  .stepper-body { display: none; }
+  .stepper { padding: 24px 4px; }
+  .stepper-row { justify-content: center; }
+}
+
+/* Mobile: hide entire stepper */
+@media (max-width: 767px) {
+  .stepper { display: none; }
+}
 </style>

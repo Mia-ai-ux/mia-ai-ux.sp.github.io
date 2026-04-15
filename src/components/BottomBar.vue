@@ -100,8 +100,15 @@ function onConfirmCancel() {
   to { transform: rotate(360deg); }
 }
 
-@media (max-width: 1100px) {
+/* At ≤1279px the sidebar collapses; go full-width */
+@media (max-width: 1279px) {
   .bottom-bar { left: 0; right: 0; }
+}
+
+/* Mobile: full width, reduce padding */
+@media (max-width: 767px) {
+  .bottom-bar { left: 0; right: 0; }
+  .bar-inner { padding: 0 16px; }
 }
 
 /* Exit confirmation dialog */

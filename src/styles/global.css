@@ -61,11 +61,18 @@
   --shadow-card-hover: 0 2px 8px -2px hsl(222 47% 20% / 0.05),
     0 12px 32px -10px hsl(222 47% 20% / 0.08);
 
-  /* 布局常量 */
+  /* 布局常量
+     content-width = total page-center width
+     content-wrapper (right panel) = content-width - sidebar-width - sidebar-gap ≈ 60vw
+     capped at 1280px max to avoid over-stretching on 4K screens
+  */
   --nav-height:    60px;
   --sidebar-width: 220px;
-  --content-width: 70vw;
   --sidebar-gap:   40px;
+  --content-width: min(
+    calc(60vw + var(--sidebar-width) + var(--sidebar-gap)),
+    calc(1280px + var(--sidebar-width) + var(--sidebar-gap))
+  );
 
   /* 字体 scale */
   --text-xs:   12px;
@@ -130,4 +137,49 @@ button {
 a {
   color: inherit;
   text-decoration: none;
+}
+
+/* ── Responsive layout breakpoints ── */
+
+/* Large desktop (1280–1599px): slight sidebar shrink */
+@media (max-width: 1599px) {
+  :root {
+    --sidebar-width: 200px;
+    --sidebar-gap:   32px;
+  }
+}
+
+/* Medium desktop / laptop (1024–1279px): sidebar narrower */
+@media (max-width: 1279px) {
+  :root {
+    --sidebar-width: 180px;
+    --sidebar-gap:   24px;
+    /* Widen the content ratio a bit to compensate */
+    --content-width: min(
+      calc(62vw + var(--sidebar-width) + var(--sidebar-gap)),
+      calc(1280px + var(--sidebar-width) + var(--sidebar-gap))
+    );
+  }
+}
+
+/* Tablet (768–1023px): collapse sidebar text, keep icons */
+@media (max-width: 1023px) {
+  :root {
+    --sidebar-width: 48px;   /* icon-only stepper */
+    --sidebar-gap:   16px;
+    --content-width: calc(88vw + var(--sidebar-width) + var(--sidebar-gap));
+  }
+}
+
+/* Mobile (<768px): hide sidebar entirely, full-width content */
+@media (max-width: 767px) {
+  :root {
+    --sidebar-width: 0px;
+    --sidebar-gap:   0px;
+    --content-width: 96vw;
+    --nav-height:    52px;
+  }
+
+  /* Allow horizontal scroll only if truly needed; prevent layout blowout */
+  body { overflow-x: hidden; }
 }
