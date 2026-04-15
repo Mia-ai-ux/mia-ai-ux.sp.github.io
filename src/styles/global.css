@@ -63,15 +63,15 @@
 
   /* 布局常量
      content-width = total page-center width
-     content-wrapper (right panel) = content-width - sidebar-width - sidebar-gap ≈ 60vw
-     capped at 1280px max to avoid over-stretching on 4K screens
+     content-wrapper (right panel) = content-width - sidebar-width - sidebar-gap ≈ 70vw
+     capped at 1400px max to avoid over-stretching on 4K screens
   */
   --nav-height:    60px;
   --sidebar-width: 220px;
   --sidebar-gap:   40px;
   --content-width: min(
-    calc(60vw + var(--sidebar-width) + var(--sidebar-gap)),
-    calc(1280px + var(--sidebar-width) + var(--sidebar-gap))
+    calc(70vw + var(--sidebar-width) + var(--sidebar-gap)),
+    calc(1400px + var(--sidebar-width) + var(--sidebar-gap))
   );
 
   /* 字体 scale */
@@ -156,8 +156,8 @@ a {
     --sidebar-gap:   24px;
     /* Widen the content ratio a bit to compensate */
     --content-width: min(
-      calc(62vw + var(--sidebar-width) + var(--sidebar-gap)),
-      calc(1280px + var(--sidebar-width) + var(--sidebar-gap))
+      calc(72vw + var(--sidebar-width) + var(--sidebar-gap)),
+      calc(1400px + var(--sidebar-width) + var(--sidebar-gap))
     );
   }
 }
