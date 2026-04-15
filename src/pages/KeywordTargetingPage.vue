@@ -35,13 +35,24 @@
                         <span class="kw-stack-th__primary">Keyword</span>
                         <span class="kw-stack-th__secondary">
                           IS | IR
-                          <button
-                            type="button"
-                            class="kw-stack-th__info"
-                            aria-label="About impression share (IS) and impression rate (IR)"
-                          >
-                            <img :src="iconHelpCircle" width="14" height="14" alt="" />
-                          </button>
+                          <span class="kw-isir-wrap">
+                            <button
+                              type="button"
+                              class="kw-stack-th__info"
+                              aria-label="About impression share (IS) and impression rate (IR)"
+                            >
+                              <img :src="iconHelpCircle" width="14" height="14" alt="" />
+                            </button>
+                            <span class="kw-isir-tooltip">
+                              <strong>Impression share (IS)</strong> is the percentage of impressions
+                              you're getting on this term relative to all the impressions it is
+                              generating.<br /><br />
+                              <strong>Impression rank (IR)</strong> is where your IS stands relative
+                              to other advertisers' share of impressions for the same term.<br /><br />
+                              Use these to understand your impression coverage and help you decide
+                              how much to bid.
+                            </span>
+                          </span>
                         </span>
                       </th>
                       <th>Match type</th>
@@ -241,13 +252,24 @@
                         <span class="kw-stack-th__primary">Keyword</span>
                         <span class="kw-stack-th__secondary">
                           IS | IR
-                          <button
-                            type="button"
-                            class="kw-stack-th__info"
-                            aria-label="About impression share (IS) and impression rate (IR)"
-                          >
-                            <img :src="iconHelpCircle" width="14" height="14" alt="" />
-                          </button>
+                          <span class="kw-isir-wrap">
+                            <button
+                              type="button"
+                              class="kw-stack-th__info"
+                              aria-label="About impression share (IS) and impression rate (IR)"
+                            >
+                              <img :src="iconHelpCircle" width="14" height="14" alt="" />
+                            </button>
+                            <span class="kw-isir-tooltip">
+                              <strong>Impression share (IS)</strong> is the percentage of impressions
+                              you're getting on this term relative to all the impressions it is
+                              generating.<br /><br />
+                              <strong>Impression rank (IR)</strong> is where your IS stands relative
+                              to other advertisers' share of impressions for the same term.<br /><br />
+                              Use these to understand your impression coverage and help you decide
+                              how much to bid.
+                            </span>
+                          </span>
                         </span>
                       </th>
                       <th>Match type</th>
@@ -888,6 +910,48 @@ function onNext() { router.push(getNextPath('/keyword-targeting')) }
 .data-table--kw-stack .kw-stack-th__info:hover,
 .added-table .kw-stack-th__info:hover {
   opacity: 1;
+}
+
+/* IS | IR tooltip bubble */
+.kw-isir-wrap {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+}
+
+.kw-isir-tooltip {
+  display: none;
+  position: absolute;
+  bottom: calc(100% + 8px);
+  left: 50%;
+  transform: translateX(-50%);
+  width: 280px;
+  background: #1c1f23;
+  color: #fff;
+  font-size: 12px;
+  font-weight: 400;
+  line-height: 1.65;
+  padding: 10px 14px;
+  border-radius: 6px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+  pointer-events: none;
+  z-index: 200;
+  white-space: normal;
+  text-align: left;
+}
+
+.kw-isir-tooltip::after {
+  content: '';
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  border: 5px solid transparent;
+  border-top-color: #1c1f23;
+}
+
+.kw-isir-wrap:hover .kw-isir-tooltip {
+  display: block;
 }
 
 .data-table--kw-stack .kw-stack-td__title,
