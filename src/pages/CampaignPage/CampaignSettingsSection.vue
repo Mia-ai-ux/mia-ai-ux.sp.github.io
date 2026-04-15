@@ -39,6 +39,7 @@
           suffix="USD"
           size="lg"
           @change="errors.dailyBudget = ''"
+          @update:modelValue="errors.dailyBudget = ''"
         />
       </div>
       <p v-if="errors.dailyBudget" class="error-msg">{{ errors.dailyBudget }}</p>

@@ -24,9 +24,10 @@
 </template>
 
 <script setup>
-import { ref, onMounted, onUnmounted } from 'vue'
+import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useCampaignStore } from '@/stores/campaign'
+import { storeToRefs } from 'pinia'
 import Stepper from '@/components/Stepper.vue'
 import BottomBar from '@/components/BottomBar.vue'
 import SitesSection from './SitesSection.vue'
@@ -38,12 +39,32 @@ import { useToast } from '@/components/ui/toast/useToast'
 
 const router = useRouter()
 const store = useCampaignStore()
+const { form } = storeToRefs(store)
 const { steps, getStepNumber, getNextPath } = useFlowSteps()
 const { toast } = useToast()
 
 const settingsRef = ref(null)
-/** Sub-item labels that currently have validation errors (passed to Stepper) */
-const errorSubItems = ref([])
+/** Becomes true after the first failed Next attempt; gates the red stepper labels */
+const hasTriedToSubmit = ref(false)
+
+/** Mirror the same rules as CampaignSettingsSection.validate() */
+const settingsHasError = computed(() => {
+  const f = form.value
+  if (!f.campaignName?.trim()) return true
+  if (!f.dailyBudget || Number(f.dailyBudget) <= 0) return true
+  if (!f.startTime) return true
+  if (
+    f.scheduleType === 'range' &&
+    f.startTime && f.endTime &&
+    new Date(f.endTime) <= new Date(f.startTime)
+  ) return true
+  return false
+})
+
+/** Reactively drives Stepper red labels — clears automatically once all fields are valid */
+const errorSubItems = computed(() =>
+  hasTriedToSubmit.value && settingsHasError.value ? ['Settings'] : []
+)
 
 const subItems = [
   { label: 'Settings',          anchorId: 'section-campaign-settings' },
@@ -87,25 +108,22 @@ function onNext() {
   const result = settingsRef.value?.validate() ?? { ok: true, errorItems: [] }
 
   if (!result.ok) {
-    const { errorItems } = result
+    // Gate reactive red labels from this point on
+    hasTriedToSubmit.value = true
 
-    // 1. Stepper sub-item labels → red (deduplicated)
-    errorSubItems.value = [...new Set(errorItems.map(e => e.subItem))]
-
-    // 2. Toast: list all unfilled fields
-    const fieldNames = errorItems.map(e => e.label).join('、')
+    // Toast: list all unfilled fields
+    const fieldNames = result.errorItems.map(e => e.label).join('、')
     toast({
       title: 'Please complete required fields',
       description: `${fieldNames} cannot be empty or invalid.`,
       variant: 'destructive',
       duration: 5000
     })
-
     return
   }
 
-  // Clear any previous error highlights
-  errorSubItems.value = []
+  // All valid — clear error state and navigate
+  hasTriedToSubmit.value = false
   router.push(getNextPath('/campaign'))
 }
 </script>
