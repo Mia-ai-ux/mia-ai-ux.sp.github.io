@@ -152,41 +152,96 @@
               <div class="ep-right">
                 <div class="ep-right-header">
                   <span class="ep-added-count">{{ form.excludedProducts.length }} added</span>
-                  <button v-if="form.excludedProducts.length > 0" class="ep-remove-all" type="button" @click="removeAllProducts">Remove all</button>
                 </div>
-                <div class="ep-added-list">
-                  <div v-for="product in form.excludedProducts" :key="product.id" class="ep-added-row">
-                    <div class="ep-product-card">
-                      <div class="ep-thumb">
-                        <div class="ep-thumb-bg"></div>
-                        <img class="ep-thumb-img" :src="product.image" :alt="product.title" />
-                      </div>
-                      <div class="ep-info">
-                        <p class="ep-title">{{ product.title }}</p>
-                        <div class="ep-meta">
-                          <span class="ep-stars">
-                            <svg v-for="i in 5" :key="i" :width="11" :height="11" viewBox="0 0 12 12" :fill="i <= roundRating(product.rating) ? '#f5a623' : '#e0e0e0'">
-                              <path d="M6 1l1.3 2.6 2.9.4-2.1 2 .5 2.9L6 7.5l-2.6 1.4.5-2.9-2.1-2 2.9-.4z"/>
-                            </svg>
-                          </span>
-                          <span class="ep-reviews">({{ product.reviews.toLocaleString() }})</span>
-                          <span class="ep-sep">|</span>
-                          <span class="ep-orig-price">{{ product.originalPrice }}</span>
-                          <span class="ep-price">{{ product.price }}</span>
-                          <span class="ep-sep">|</span>
-                          <span class="ep-stock">In stock</span>
-                          <span class="ep-sep">|</span>
-                          <span class="ep-asin">ASIN：{{ product.asin }}</span>
-                        </div>
-                      </div>
-                    </div>
-                    <button class="eb-close-btn" type="button" aria-label="Remove product" @click="removeProduct(product.id)">
-                      <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                        <path d="M2 2l10 10M12 2L2 12" />
-                      </svg>
-                    </button>
+
+                <!-- toolbar: Add product + Remove all -->
+                <div class="ep-added-toolbar">
+                  <button type="button" class="ep-add-product-btn" @click="addManualEpRow">
+                    <span class="ep-add-plus" aria-hidden="true">+</span>
+                    Add product
+                  </button>
+                  <button
+                    v-if="form.excludedProducts.length > 0"
+                    type="button"
+                    class="ep-remove-all"
+                    @click="removeAllProducts"
+                  >Remove all</button>
+                </div>
+
+                <!-- Empty state -->
+                <div v-if="form.excludedProducts.length === 0" class="ep-empty-block">
+                  <div class="ep-empty-illus" aria-hidden="true">
+                    <svg width="56" height="56" viewBox="0 0 56 56" fill="none">
+                      <rect x="6" y="10" width="44" height="32" rx="4" stroke="var(--gray-300,#d0d7e2)" stroke-width="1.5" fill="var(--gray-50,#f8fafc)"/>
+                      <path d="M14 26h28M14 33h18" stroke="var(--gray-300,#d0d7e2)" stroke-width="1.5" stroke-linecap="round"/>
+                      <path d="M36 38l6 6M42 38l-6 6" stroke="var(--primary,#1876ff)" stroke-width="1.5" stroke-linecap="round" opacity="0.6"/>
+                    </svg>
                   </div>
-                  <p v-if="form.excludedProducts.length === 0" class="ep-empty-right">No excluded products yet.</p>
+                  <p class="ep-empty-text">尚未添加商品</p>
+                  <p class="ep-empty-hint">从左侧选择添加，或点击上方 + Add product 手动输入</p>
+                </div>
+
+                <!-- Table -->
+                <div v-else class="ep-added-table-wrap">
+                  <table class="ep-added-table">
+                    <thead>
+                      <tr>
+                        <th>Product</th>
+                        <th>Bid</th>
+                        <th class="ep-action-col" aria-label="Action"></th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr v-for="row in form.excludedProducts" :key="row.id">
+                        <td class="ep-col-product">
+                          <template v-if="row.manual">
+                            <input
+                              :id="'ep-asin-' + row.id"
+                              v-model="row.asin"
+                              class="ep-asin-input"
+                              type="text"
+                              placeholder="Enter ASIN (e.g. B08Q6LV5CR)"
+                              @keydown.enter.prevent="commitEpAsin(row)"
+                              @blur="commitEpAsin(row)"
+                            />
+                          </template>
+                          <template v-else>
+                            <div class="ep-added-product">
+                              <div class="ep-added-thumb">
+                                <img v-if="row.image" :src="row.image" :alt="row.title" />
+                                <svg v-else width="40" height="40" viewBox="0 0 40 40" fill="none" aria-hidden="true">
+                                  <rect width="40" height="40" rx="4" fill="#f3f5f8"/>
+                                  <rect x="10" y="12" width="20" height="16" rx="2" stroke="#c8cdd4" stroke-width="1.2" fill="none"/>
+                                  <circle cx="15" cy="18" r="2" fill="#c8cdd4"/>
+                                  <path d="M10 24l5-4 4 3 4-3 7 5" stroke="#c8cdd4" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/>
+                                </svg>
+                              </div>
+                              <div class="ep-added-info">
+                                <p class="ep-added-title">{{ row.title || row.asin }}</p>
+                                <p class="ep-added-meta">ASIN: {{ row.asin }}</p>
+                              </div>
+                            </div>
+                          </template>
+                        </td>
+                        <td class="ep-col-bid">
+                          <span class="ep-bid-wrap">
+                            <span class="ep-currency">$</span>
+                            <input
+                              v-model.number="row.bid"
+                              class="ep-bid-input"
+                              type="number"
+                              step="0.01"
+                              min="0"
+                              placeholder="0.00"
+                            />
+                          </span>
+                        </td>
+                        <td class="ep-action-col">
+                          <button type="button" class="ep-remove-btn" aria-label="Remove" @click="removeProduct(row.id)">×</button>
+                        </td>
+                      </tr>
+                    </tbody>
+                  </table>
                 </div>
               </div>
             </div>
@@ -352,8 +407,27 @@ function toggleProduct(product) {
   if (isExcluded(product.id)) {
     form.value.excludedProducts = form.value.excludedProducts.filter(p => p.id !== product.id)
   } else {
-    form.value.excludedProducts.push({ ...product })
+    form.value.excludedProducts.push({ ...product, bid: 0.02, manual: false })
   }
+}
+
+function addManualEpRow() {
+  const id = `ep-manual-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`
+  form.value.excludedProducts.push({ id, asin: '', title: '', image: '', bid: 0.02, manual: true })
+  nextTick(() => {
+    document.getElementById(`ep-asin-${id}`)?.focus()
+  })
+}
+
+function commitEpAsin(row) {
+  const asin = (row.asin || '').trim().toUpperCase()
+  if (!asin) {
+    form.value.excludedProducts = form.value.excludedProducts.filter(p => p.id !== row.id)
+    return
+  }
+  row.asin = asin
+  row.title = row.title || asin
+  row.manual = false
 }
 
 function removeProduct(id) {
@@ -809,6 +883,7 @@ function onNext()   { router.push(getNextPath('/negative-targeting')) }
   box-sizing: border-box;
   min-height: var(--ep-column-header-height);
   flex-shrink: 0;
+  border-bottom: 1px solid var(--border-strong, #e2e8f0);
 }
 
 .ep-added-count {
@@ -829,32 +904,209 @@ function onNext()   { router.push(getNextPath('/negative-targeting')) }
   transition: color 0.15s;
 }
 
-.ep-remove-all:hover {
-  color: #ef4444;
+.ep-remove-all:hover { color: #ef4444; }
+
+/* ── Added toolbar ── */
+.ep-added-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 14px;
+  flex-shrink: 0;
 }
 
-.ep-added-list {
+.ep-add-product-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  background: none;
+  border: none;
+  color: var(--primary, #1876ff);
+  font-size: var(--text-base, 14px);
+  font-weight: 500;
+  cursor: pointer;
+  padding: 4px 0;
+  font-family: inherit;
+  transition: opacity 0.15s;
+}
+
+.ep-add-product-btn:hover { opacity: 0.75; }
+
+.ep-add-plus {
+  font-size: 16px;
+  line-height: 1;
+  font-weight: 400;
+}
+
+/* ── Added table ── */
+.ep-added-table-wrap {
   flex: 1;
   overflow-y: auto;
+}
+
+.ep-added-table {
+  width: 100%;
+  border-collapse: collapse;
+  table-layout: fixed;
+}
+
+.ep-added-table thead tr {
+  background: #f8f9fb;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.ep-added-table th {
+  height: 44px;
+  padding: 0 12px;
+  text-align: left;
+  font-size: 13px;
+  font-weight: 600;
+  color: #374151;
+  vertical-align: middle;
+}
+
+.ep-added-table td {
+  padding: 10px 12px;
+  font-size: 13px;
+  color: var(--text-main);
+  vertical-align: middle;
+  border-bottom: 1px solid #f1f5f9;
+}
+
+.ep-added-table tbody tr:last-child td { border-bottom: none; }
+.ep-added-table tbody tr:hover { background: rgba(0,0,0,0.02); }
+
+.ep-col-product { width: auto; }
+.ep-col-bid { width: 80px; }
+.ep-action-col { width: 36px; text-align: center; }
+
+/* Product card in table */
+.ep-added-product {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.ep-added-thumb {
+  width: 36px;
+  height: 36px;
+  flex-shrink: 0;
+  border-radius: 4px;
+  overflow: hidden;
+  background: #f3f5f8;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.ep-added-thumb img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+.ep-added-info {
+  min-width: 0;
+  flex: 1;
+}
+
+.ep-added-title {
   margin: 0;
-  padding: 0;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text-main);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.ep-added-meta {
+  margin: 2px 0 0;
+  font-size: 12px;
+  color: var(--text-hint);
+}
+
+/* ASIN input (minimal, borderless) */
+.ep-asin-input {
+  width: 100%;
+  border: none;
+  background: transparent;
+  outline: none;
+  font-size: 13px;
+  font-family: inherit;
+  color: var(--text-main);
+  padding: 0 4px;
+}
+
+.ep-asin-input::placeholder { color: #c0c8d8; }
+
+/* Bid input */
+.ep-bid-wrap {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+}
+
+.ep-currency {
+  font-size: 13px;
+  color: var(--text-sub);
+}
+
+.ep-bid-input {
+  width: 52px;
+  border: none;
+  background: transparent;
+  outline: none;
+  font-size: 13px;
+  font-family: inherit;
+  color: var(--text-main);
+  padding: 2px 0;
+}
+
+.ep-bid-input::-webkit-inner-spin-button,
+.ep-bid-input::-webkit-outer-spin-button { opacity: 0; }
+
+/* Remove (×) button */
+.ep-remove-btn {
+  background: none;
+  border: none;
+  color: var(--text-hint);
+  font-size: 16px;
+  line-height: 1;
+  cursor: pointer;
+  padding: 2px 4px;
+  border-radius: 3px;
+  font-family: inherit;
+  transition: color 0.15s;
+}
+
+.ep-remove-btn:hover { color: #ef4444; }
+
+/* Empty state */
+.ep-empty-block {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  align-items: center;
+  justify-content: center;
+  flex: 1;
+  padding: 32px 16px;
+  gap: 8px;
 }
 
-.ep-added-row {
-  display: flex;
-  align-items: flex-start;
-  gap: 12px;
-  padding: 16px;
-  border-radius: 4px;
-  border: 1px solid transparent;
-  background: var(--ep-list-surface);
+.ep-empty-illus { opacity: 0.6; }
+
+.ep-empty-text {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--text-sub);
 }
 
-.ep-added-row .eb-close-btn {
-  align-self: center;
+.ep-empty-hint {
+  margin: 0;
+  font-size: 12px;
+  color: var(--text-hint);
+  text-align: center;
 }
 
 /* Product card shared */
