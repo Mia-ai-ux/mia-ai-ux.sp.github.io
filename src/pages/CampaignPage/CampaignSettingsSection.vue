@@ -128,7 +128,7 @@
 </template>
 
 <script setup>
-import { ref, reactive, nextTick } from 'vue'
+import { ref, reactive, watch, nextTick } from 'vue'
 import { storeToRefs } from 'pinia'
 import { useCampaignStore } from '@/stores/campaign'
 import InlineNumberInput from '@/components/base/InlineNumberInput.vue'
@@ -155,6 +155,17 @@ const errors = reactive({
   dailyBudget:  '',
   dateRange:    ''
 })
+
+// Clear schedule error as soon as the date values become valid
+watch(
+  () => [form.value.startTime, form.value.endTime, form.value.scheduleType],
+  ([start, end, type]) => {
+    if (!errors.dateRange) return
+    if (!start) return                                        // still empty
+    if (type === 'range' && start && end && new Date(end) <= new Date(start)) return  // still invalid range
+    errors.dateRange = ''
+  }
+)
 
 /**
  * 外部调用：校验所有必填项
