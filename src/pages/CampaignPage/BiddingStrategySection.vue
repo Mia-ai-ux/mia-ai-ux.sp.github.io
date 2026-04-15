@@ -195,6 +195,10 @@ function placementBidHint(percentKey) {
     const maxUp = eff * 2
     return `≈ ${start} · max ${formatUsd(maxUp)}`
   }
+  if (mode === 'down_only') {
+    // bid can only go lower — the calculated value is the ceiling
+    return `≤ ${start}`
+  }
   return `≈ ${start}`
 }
 

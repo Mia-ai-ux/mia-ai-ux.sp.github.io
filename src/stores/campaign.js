@@ -16,7 +16,7 @@ export const useCampaignStore = defineStore('campaign', () => {
     startTime: todayDate,
     endTime: '',
     portfolio: '',
-    bidMode: 'fixed',
+    bidMode: 'down_only',
     bidTop: 0,
     bidRest: 0,
     bidProduct: 0,
@@ -83,7 +83,7 @@ export const useCampaignStore = defineStore('campaign', () => {
 
   function reset() {
     form.value.siteType = 'amazon_and_beyond'
-    form.value.bidMode = 'fixed'
+    form.value.bidMode = 'down_only'
     form.value.targeting = 'auto'
     form.value.scheduleType = 'continuous'
     form.value.manualTargetType = 'keyword'
