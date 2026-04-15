@@ -17,7 +17,7 @@
           <div class="tooltip-wrap">
             <img :src="iconHelpCircle" alt="" width="16" height="16" class="help-icon-trigger" />
             <div class="tooltip-bubble">
-              Default bid applies to all clicks unless you set a different bid for a keyword.
+              Default bid applies to all clicks unless you set a different bid.
             </div>
           </div>
         </div>
