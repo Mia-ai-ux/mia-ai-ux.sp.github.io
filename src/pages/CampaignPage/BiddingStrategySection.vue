@@ -102,15 +102,59 @@
         <div class="sub-section">
           <div class="sub-label-row">
             <span class="sub-label">Audiences</span>
-            <img :src="iconHelpCircle" alt="" width="16" height="16" />
+            <div class="tooltip-wrap">
+              <img :src="iconHelpCircle" alt="" width="16" height="16" class="help-icon-trigger" />
+              <div class="tooltip-bubble">
+                The "clicked or added brand's product to cart" audience includes people who have
+                clicked or added to cart within the last 3 months, but haven't purchased.
+              </div>
+            </div>
           </div>
-          <div class="audiences-body">
-            <UiSelect
-              v-model="form.audienceMode"
-              size="lg"
-              :options="audienceOptions"
-            />
+
+          <!-- Three radio options -->
+          <div class="audience-options">
+            <label class="radio-line" @click="form.audienceMode = 'increase_amazon_built'">
+              <span class="radio-dot" :class="{ checked: form.audienceMode === 'increase_amazon_built' }">
+                <span v-if="form.audienceMode === 'increase_amazon_built'" class="radio-dot-inner" />
+              </span>
+              <span>Increase bids for audiences built by Amazon</span>
+            </label>
+
+            <label class="radio-line" @click="form.audienceMode = 'increase_amc_custom'">
+              <span class="radio-dot" :class="{ checked: form.audienceMode === 'increase_amc_custom' }">
+                <span v-if="form.audienceMode === 'increase_amc_custom'" class="radio-dot-inner" />
+              </span>
+              <span>Increase bids on a custom audience created in Amazon Marketing Cloud (AMC)</span>
+            </label>
+
+            <label class="radio-line" @click="form.audienceMode = 'don_t_increase'">
+              <span class="radio-dot" :class="{ checked: form.audienceMode === 'don_t_increase' }">
+                <span v-if="form.audienceMode === 'don_t_increase'" class="radio-dot-inner" />
+              </span>
+              <span>Don't increase bids for an audience</span>
+            </label>
           </div>
+
+          <!-- Audience config — only when an increase mode is selected -->
+          <Transition name="slide">
+            <div v-if="form.audienceMode !== 'don_t_increase'" class="audience-config">
+              <p class="audience-config-label">Audience</p>
+              <div class="placement-input-row">
+                <div class="placement-input-wrap">
+                  <UiSelect
+                    v-model="form.audienceId"
+                    size="lg"
+                    placeholder="Choose an audience"
+                    :options="currentAudienceOptions"
+                  />
+                </div>
+                <div class="audience-pct-wrap">
+                  <InlineNumberInput v-model="form.audiencePct" suffix="%" size="lg" />
+                </div>
+              </div>
+              <p v-if="audienceBidHint" class="audience-hint">{{ audienceBidHint }}</p>
+            </div>
+          </Transition>
         </div>
       </div>
     </Transition>
@@ -118,7 +162,7 @@
 </template>
 
 <script setup>
-import { computed, ref, nextTick } from 'vue'
+import { computed, ref, watch, nextTick } from 'vue'
 import { storeToRefs } from 'pinia'
 import { useCampaignStore } from '@/stores/campaign'
 import RadioCard from '@/components/base/RadioCard.vue'
@@ -208,14 +252,47 @@ const placements = [
   { key: 'bidProduct', label: 'Product pages' }
 ]
 
-const audienceOptions = [
-  { value: 'increase_amazon_built', label: 'Increase bids for audiences built by Amazon' },
-  {
-    value: 'increase_amc_custom',
-    label: 'Increase bids on a custom audience created in Amazon Marketing Cloud (AMC)',
-  },
-  { value: 'don_t_increase', label: "Don't increase bids for an audience" },
+// Clear selected audience when switching mode
+watch(() => form.value.audienceMode, () => {
+  form.value.audienceId  = ''
+  form.value.audiencePct = 0
+})
+
+const amazonAudienceOptions = [
+  { value: 'amazon_interest',    label: 'Amazon Interest Audiences' },
+  { value: 'amazon_lifestyle',   label: 'Amazon Lifestyle Segments' },
+  { value: 'amazon_inmarket',    label: 'In-Market Audiences' },
+  { value: 'amazon_remarketing', label: 'Remarketing Audiences' },
 ]
+
+const amcAudienceOptions = [
+  { value: 'amc_1',  label: 'AMC AMC Test_Audience_Cart_Abandon_20251222_6 - 403316359709171985' },
+  { value: 'amc_2',  label: 'AMC DREO-DSP 1 DPV/Exclude Purchase-DSP-L14D-Rule based - 376373797466773890' },
+  { value: 'amc_3',  label: 'AMC DREO-High Value Audiences/Top30%-NA&AD-L30D - BalancedLookalike - 404953712003503637' },
+  { value: 'amc_4',  label: 'AMC Household Fan-DSP 1~3 DPV/Exclude Purchase or SA clicks-DSP-L14D-Rule based - 393375133049604205' },
+  { value: 'amc_5',  label: 'AMC AMC Test_Audience_Cart_Abandon_20251222_4 - 395120201479263450' },
+  { value: 'amc_6',  label: 'AMC Tower Fan_DSP Campaign Impression_Min3_DSP_L30D_Rule based - 386547894924918884' },
+  { value: 'amc_7',  label: 'AMC Tower Fan_KW Search_SA_L30D_Rule based - 413307513012821463' },
+  { value: 'amc_8',  label: 'AMC AMC Test_Audience_Cart_Abandon_20251222_7 - 375875559998058170' },
+  { value: 'amc_9',  label: 'AMC AMC Water Filter-Search Not Purchase-L30D-Rule based-ST&ASIN - 400225369521613229' },
+  { value: 'amc_10', label: 'AMC Space Heater SA brand keywords & no purchase L7D Rule based - 382177465223739296' },
+]
+
+const currentAudienceOptions = computed(() =>
+  form.value.audienceMode === 'increase_amazon_built'
+    ? amazonAudienceOptions
+    : amcAudienceOptions
+)
+
+/** "With dynamic bids - up and down, a $X bid can be up to $Y for this audience." */
+const audienceBidHint = computed(() => {
+  const base = baseBidAmount.value
+  if (!base || form.value.audienceMode === 'don_t_increase') return ''
+  if (form.value.bidMode !== 'up_down') return ''
+  const pct    = Number(form.value.audiencePct) || 0
+  const upTo   = base * (1 + pct / 100) * 2
+  return `With dynamic bids - up and down, a ${formatUsd(base)} bid can be up to ${formatUsd(upTo)} for this audience.`
+})
 </script>
 
 <style scoped>
@@ -413,9 +490,76 @@ h2 {
   white-space: nowrap;
 }
 
-.audiences-body {
-  width: 100%;
-  max-width: 400px;
+/* Audience radio options */
+.audience-options {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.radio-line {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  cursor: pointer;
+  font-size: var(--text-base, 14px);
+  color: var(--text-main);
+  line-height: 1.5;
+  user-select: none;
+}
+
+.radio-dot {
+  flex-shrink: 0;
+  width: 16px;
+  height: 16px;
+  margin-top: 2px;
+  border-radius: 50%;
+  border: 2px solid var(--border-strong, #b0b8c8);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: border-color 0.15s;
+}
+
+.radio-dot.checked {
+  border-color: var(--primary);
+}
+
+.radio-dot-inner {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--primary);
+}
+
+/* Audience config panel */
+.audience-config {
+  margin-top: 4px;
+  padding: 16px;
+  border-radius: var(--radius-md, 8px);
+  background: var(--gray-50, #f8fafc);
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.audience-config-label {
+  margin: 0;
+  font-size: var(--text-base, 14px);
+  font-weight: 500;
+  color: var(--text-main);
+}
+
+.audience-pct-wrap {
+  width: 110px;
+  flex-shrink: 0;
+}
+
+.audience-hint {
+  margin: 2px 0 0;
+  font-size: var(--text-sm, 13px);
+  color: var(--text-hint);
+  line-height: 1.5;
 }
 
 .slide-enter-active,
@@ -427,5 +571,51 @@ h2 {
 .slide-leave-to {
   opacity: 0;
   transform: translateY(-6px);
+}
+
+/* Audiences help tooltip */
+.tooltip-wrap {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+}
+
+.help-icon-trigger {
+  display: block;
+  cursor: default;
+}
+
+.tooltip-bubble {
+  display: none;
+  position: absolute;
+  left: 24px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: #1c1f23;
+  color: #fff;
+  font-size: var(--text-sm, 13px);
+  font-weight: 400;
+  line-height: 1.6;
+  padding: 10px 14px;
+  border-radius: var(--radius-md, 6px);
+  width: 300px;
+  z-index: 999;
+  box-shadow: var(--shadow-md);
+  pointer-events: none;
+}
+
+.tooltip-bubble::before {
+  content: '';
+  position: absolute;
+  left: -6px;
+  top: 50%;
+  transform: translateY(-50%);
+  border: 5px solid transparent;
+  border-right-color: #1c1f23;
+  border-left: none;
+}
+
+.tooltip-wrap:hover .tooltip-bubble {
+  display: block;
 }
 </style>

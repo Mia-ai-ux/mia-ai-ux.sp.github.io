@@ -20,7 +20,9 @@ export const useCampaignStore = defineStore('campaign', () => {
     bidTop: 0,
     bidRest: 0,
     bidProduct: 0,
-    audienceMode: 'don_t_increase',
+    audienceMode: 'don_t_increase',  // 'increase_amazon_built' | 'increase_amc_custom' | 'don_t_increase'
+    audienceId:   '',
+    audiencePct:  0,
     targeting: 'auto',
 
     // ── Step 2: Ad Group ──────────────────────────
