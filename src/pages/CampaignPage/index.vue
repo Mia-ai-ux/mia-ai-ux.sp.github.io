@@ -1,7 +1,12 @@
 <template>
   <div class="page-layout">
     <div class="page-center">
-      <Stepper :steps="steps" :current-step="getStepNumber('/campaign')" :active-sub-item="activeSubItem" />
+      <Stepper
+        :steps="steps"
+        :current-step="getStepNumber('/campaign')"
+        :active-sub-item="activeSubItem"
+        :error-sub-items="errorSubItems"
+      />
 
       <div class="content-wrapper">
         <h2 class="page-title">Campaign Plan</h2>
@@ -29,12 +34,16 @@ import CampaignSettingsSection from './CampaignSettingsSection.vue'
 import BiddingStrategySection from './BiddingStrategySection.vue'
 import TargetingSection from './TargetingSection.vue'
 import { useFlowSteps } from '@/composables/useFlowSteps'
+import { useToast } from '@/components/ui/toast/useToast'
 
 const router = useRouter()
 const store = useCampaignStore()
 const { steps, getStepNumber, getNextPath } = useFlowSteps()
+const { toast } = useToast()
 
 const settingsRef = ref(null)
+/** Sub-item labels that currently have validation errors (passed to Stepper) */
+const errorSubItems = ref([])
 
 const subItems = [
   { label: 'Settings',          anchorId: 'section-campaign-settings' },
@@ -75,14 +84,28 @@ function onCancel() {
 }
 
 function onNext() {
-  // 触发 CampaignSettingsSection 内的表单校验
-  const valid = settingsRef.value?.validate() ?? true
-  if (!valid) {
-    // 滚动到错误区域
-    const el = document.getElementById('section-campaign-settings')
-    if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' })
+  const result = settingsRef.value?.validate() ?? { ok: true, errorItems: [] }
+
+  if (!result.ok) {
+    const { errorItems } = result
+
+    // 1. Stepper sub-item labels → red (deduplicated)
+    errorSubItems.value = [...new Set(errorItems.map(e => e.subItem))]
+
+    // 2. Toast: list all unfilled fields
+    const fieldNames = errorItems.map(e => e.label).join('、')
+    toast({
+      title: 'Please complete required fields',
+      description: `${fieldNames} cannot be empty or invalid.`,
+      variant: 'destructive',
+      duration: 5000
+    })
+
     return
   }
+
+  // Clear any previous error highlights
+  errorSubItems.value = []
   router.push(getNextPath('/campaign'))
 }
 </script>

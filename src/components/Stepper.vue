@@ -63,7 +63,10 @@
               v-for="(sub, idx) in step.subItems"
               :key="idx"
               class="stepper-sub"
-              :class="{ active: sub.label === activeSubItem }"
+              :class="{
+                active: sub.label === activeSubItem,
+                error: errorSubItems.includes(sub.label)
+              }"
               @click="scrollTo(sub.anchorId)"
             >
               {{ sub.label }}
@@ -83,7 +86,9 @@ import { useRouter } from 'vue-router'
 const props = defineProps({
   steps: { type: Array, required: true },
   currentStep: { type: Number, default: 1 },
-  activeSubItem: { type: String, default: '' }
+  activeSubItem: { type: String, default: '' },
+  /** Labels of sub-items that have validation errors — shown in red */
+  errorSubItems: { type: Array, default: () => [] }
 })
 
 const router = useRouter()
@@ -275,6 +280,16 @@ function goToStep(path) {
   color: var(--primary, #1876ff);
   font-weight: 600;
   background: none;
+}
+
+.stepper-sub.error {
+  color: var(--color-danger, #ef4444);
+  font-weight: 600;
+}
+
+.stepper-sub.error:hover {
+  color: var(--color-danger, #ef4444);
+  opacity: 0.8;
 }
 
 .stepper-gap {

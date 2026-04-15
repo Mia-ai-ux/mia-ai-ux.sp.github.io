@@ -3,7 +3,7 @@
     <h2>Settings</h2>
 
     <!-- Campaign Name -->
-    <div class="field" :class="{ 'has-error': errors.campaignName }">
+    <div id="field-campaign-name" class="field" :class="{ 'has-error': errors.campaignName }">
       <label for="campaignName">
         Campaign Name <span class="required">*</span>
       </label>
@@ -20,7 +20,7 @@
     </div>
 
     <!-- Daily Budget -->
-    <div class="field" :class="{ 'has-error': errors.dailyBudget }">
+    <div id="field-daily-budget" class="field" :class="{ 'has-error': errors.dailyBudget }">
       <div class="label-row">
         <label>Daily budget <span class="required">*</span></label>
         <div class="tooltip-wrap">
@@ -45,8 +45,8 @@
     </div>
 
     <!-- Schedule -->
-    <div class="field" :class="{ 'has-error': errors.dateRange }">
-      <label>Schedule</label>
+    <div id="field-schedule" class="field" :class="{ 'has-error': errors.dateRange }">
+      <label>Schedule <span class="required">*</span></label>
 
       <label class="radio-line" @click="form.scheduleType = 'continuous'">
         <span class="radio-dot" :class="{ checked: form.scheduleType === 'continuous' }">
@@ -127,7 +127,7 @@
 </template>
 
 <script setup>
-import { ref, reactive } from 'vue'
+import { ref, reactive, nextTick } from 'vue'
 import { storeToRefs } from 'pinia'
 import { useCampaignStore } from '@/stores/campaign'
 import InlineNumberInput from '@/components/base/InlineNumberInput.vue'
@@ -155,30 +155,54 @@ const errors = reactive({
   dateRange:    ''
 })
 
-/** 外部调用：返回 true 表示通过校验 */
+/**
+ * 外部调用：校验所有必填项
+ * @returns {{ ok: boolean, errorItems: Array<{subItem:string, label:string, anchorId:string}> }}
+ */
 function validate() {
-  let ok = true
+  const errorItems = []
 
   if (!form.value.campaignName?.trim()) {
     errors.campaignName = 'Campaign name is required.'
-    ok = false
+    errorItems.push({ subItem: 'Settings', label: 'Campaign Name', anchorId: 'field-campaign-name' })
+  } else {
+    errors.campaignName = ''
   }
 
   if (!form.value.dailyBudget || Number(form.value.dailyBudget) <= 0) {
     errors.dailyBudget = 'Please enter a daily budget greater than 0.'
-    ok = false
+    errorItems.push({ subItem: 'Settings', label: 'Daily budget', anchorId: 'field-daily-budget' })
+  } else {
+    errors.dailyBudget = ''
   }
 
-  if (form.value.scheduleType === 'range') {
+  if (!form.value.startTime) {
+    errors.dateRange = 'Please select a start date.'
+    errorItems.push({ subItem: 'Settings', label: 'Schedule', anchorId: 'field-schedule' })
+  } else if (form.value.scheduleType === 'range') {
     const start = form.value.startTime
     const end   = form.value.endTime
     if (start && end && new Date(end) <= new Date(start)) {
       errors.dateRange = 'End date must be after start date.'
-      ok = false
+      errorItems.push({ subItem: 'Settings', label: 'Schedule', anchorId: 'field-schedule' })
+    } else {
+      errors.dateRange = ''
     }
+  } else {
+    errors.dateRange = ''
   }
 
-  return ok
+  const ok = errorItems.length === 0
+
+  if (!ok) {
+    // Scroll to the first unfilled field
+    nextTick(() => {
+      const el = document.getElementById(errorItems[0].anchorId)
+      if (el) el.scrollIntoView({ behavior: 'smooth', block: 'center' })
+    })
+  }
+
+  return { ok, errorItems }
 }
 
 defineExpose({ validate })
