@@ -54,7 +54,13 @@
               <span class="knob"></span>
             </button>
             <div class="group-fields">
-              <p class="group-name">{{ g.label }}</p>
+              <div class="group-name-row">
+                <p class="group-name">{{ g.label }}</p>
+                <div class="tooltip-wrap group-tooltip-wrap">
+                  <img :src="iconHelpCircle" alt="" width="14" height="14" class="help-icon-trigger" />
+                  <div class="tooltip-bubble group-tooltip-bubble">{{ g.desc }}</div>
+                </div>
+              </div>
               <div v-if="form.autoGroups[g.key].enabled" class="bid-row">
                 <span class="bid-label">Bid</span>
                 <InlineNumberInput
@@ -84,10 +90,26 @@ import iconHelpCircle from '@/assets/icon-help-circle.svg'
 const { form } = storeToRefs(useCampaignStore())
 
 const groups = [
-  { key: 'closeMatch', label: 'Close match' },
-  { key: 'looseMatch', label: 'Loose match' },
-  { key: 'substitutes', label: 'Substitutes' },
-  { key: 'complements', label: 'Complements' }
+  {
+    key: 'closeMatch',
+    label: 'Close match',
+    desc: 'Shows ads to shoppers using search terms closely related to your products. Example: "running shoes" might match "athletic shoes".'
+  },
+  {
+    key: 'looseMatch',
+    label: 'Loose match',
+    desc: 'Shows ads to shoppers using search terms loosely related to your products. Example: "running shoes" might match "sports equipment".'
+  },
+  {
+    key: 'substitutes',
+    label: 'Substitutes',
+    desc: 'Shows ads to shoppers viewing similar products to yours. Example: Showing Nike running shoes to someone viewing Adidas running shoes.'
+  },
+  {
+    key: 'complements',
+    label: 'Complements',
+    desc: 'Shows ads to shoppers viewing products that pair well with yours. Example: Showing shoe insoles to someone viewing running shoes.'
+  }
 ]
 
 const touched = reactive({
@@ -283,11 +305,35 @@ hr {
   gap: 10px;
 }
 
+.group-name-row {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
 .group-name {
   margin: 0;
   font-size: var(--text-md, 15px);
   font-weight: 600;
   color: var(--text-main);
+}
+
+/* Group-level tooltip: opens upward to avoid clipping at bottom */
+.group-tooltip-bubble {
+  left: 22px;
+  top: auto;
+  bottom: calc(100% + 8px);
+  transform: none;
+  width: 260px;
+}
+
+.group-tooltip-bubble::before {
+  top: auto;
+  bottom: -10px;
+  left: 10px;
+  transform: none;
+  border-width: 6px 6px 0 6px;
+  border-color: #1c1f23 transparent transparent transparent;
 }
 
 .bid-row {
