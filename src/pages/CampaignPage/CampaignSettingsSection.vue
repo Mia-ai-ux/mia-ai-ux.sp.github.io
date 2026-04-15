@@ -57,7 +57,7 @@
       </label>
 
       <div v-if="form.scheduleType === 'continuous'" class="date-row">
-        <DatePicker v-model="form.startTime" placeholder="Select start date" size="lg" class="date-picker-field" />
+        <DatePicker v-model="form.startTime" :min="todayStr" placeholder="Select start date" size="lg" class="date-picker-field" />
       </div>
 
       <label class="radio-line schedule-gap" @click="form.scheduleType = 'range'">
@@ -70,18 +70,18 @@
       <div v-if="form.scheduleType === 'range'" class="range-inputs">
         <DatePicker
           v-model="form.startTime"
+          :min="todayStr"
           placeholder="Select start date"
           size="lg"
           class="date-picker-field"
-          @change="errors.dateRange = ''"
         />
         <span class="range-sep">→</span>
         <DatePicker
           v-model="form.endTime"
+          :min="form.startTime || todayStr"
           placeholder="Select end date"
           size="lg"
           class="date-picker-field"
-          @change="errors.dateRange = ''"
         />
       </div>
       <p v-if="errors.dateRange" class="error-msg">{{ errors.dateRange }}</p>
@@ -141,6 +141,10 @@ import DatePicker from '@/components/ui/date-picker/DatePicker.vue'
 const { form } = storeToRefs(useCampaignStore())
 const advancedOpen = ref(false)
 
+/** 今日字符串 'YYYY-MM-DD'，用作日期选择器的 min 值（禁止选过去日期） */
+const _today = new Date()
+const todayStr = `${_today.getFullYear()}-${String(_today.getMonth() + 1).padStart(2, '0')}-${String(_today.getDate()).padStart(2, '0')}`
+
 const portfolioOptions = [
   { value: 'none', label: 'No Portfolio' },
   { value: 'hhm004s-black-2000', label: 'HHM004S Balck-2000' },
@@ -156,13 +160,14 @@ const errors = reactive({
   dateRange:    ''
 })
 
-// Clear schedule error as soon as the date values become valid
+// Reactively clear schedule error as soon as values satisfy all rules
 watch(
   () => [form.value.startTime, form.value.endTime, form.value.scheduleType],
   ([start, end, type]) => {
     if (!errors.dateRange) return
-    if (!start) return                                        // still empty
-    if (type === 'range' && start && end && new Date(end) <= new Date(start)) return  // still invalid range
+    if (!start) return                                                    // 开始日期仍为空
+    if (type === 'range' && !end) return                                  // 结束日期仍为空
+    if (type === 'range' && new Date(end) <= new Date(start)) return      // 结束日期不晚于开始日期
     errors.dateRange = ''
   }
 )
@@ -192,9 +197,10 @@ function validate() {
     errors.dateRange = 'Please select a start date.'
     errorItems.push({ subItem: 'Settings', label: 'Schedule', anchorId: 'field-schedule' })
   } else if (form.value.scheduleType === 'range') {
-    const start = form.value.startTime
-    const end   = form.value.endTime
-    if (start && end && new Date(end) <= new Date(start)) {
+    if (!form.value.endTime) {
+      errors.dateRange = 'Please select an end date.'
+      errorItems.push({ subItem: 'Settings', label: 'Schedule', anchorId: 'field-schedule' })
+    } else if (new Date(form.value.endTime) <= new Date(form.value.startTime)) {
       errors.dateRange = 'End date must be after start date.'
       errorItems.push({ subItem: 'Settings', label: 'Schedule', anchorId: 'field-schedule' })
     } else {

@@ -53,11 +53,10 @@ const settingsHasError = computed(() => {
   if (!f.campaignName?.trim()) return true
   if (!f.dailyBudget || Number(f.dailyBudget) <= 0) return true
   if (!f.startTime) return true
-  if (
-    f.scheduleType === 'range' &&
-    f.startTime && f.endTime &&
-    new Date(f.endTime) <= new Date(f.startTime)
-  ) return true
+  if (f.scheduleType === 'range') {
+    if (!f.endTime) return true
+    if (new Date(f.endTime) <= new Date(f.startTime)) return true
+  }
   return false
 })
 
