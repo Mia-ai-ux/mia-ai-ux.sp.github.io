@@ -923,8 +923,8 @@ function onNext() { router.push(getNextPath('/keyword-targeting')) }
   display: none;
   position: absolute;
   top: calc(100% + 8px);
-  left: 50%;
-  transform: translateX(-50%);
+  left: -8px;
+  transform: none;
   width: 280px;
   background: #1c1f23;
   color: #fff;
@@ -944,8 +944,8 @@ function onNext() { router.push(getNextPath('/keyword-targeting')) }
   content: '';
   position: absolute;
   bottom: 100%;
-  left: 50%;
-  transform: translateX(-50%);
+  left: 14px;
+  transform: none;
   border: 5px solid transparent;
   border-bottom-color: #1c1f23;
 }
