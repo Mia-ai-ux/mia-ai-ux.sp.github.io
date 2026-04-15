@@ -922,7 +922,7 @@ function onNext() { router.push(getNextPath('/keyword-targeting')) }
 .kw-isir-tooltip {
   display: none;
   position: absolute;
-  bottom: calc(100% + 8px);
+  top: calc(100% + 8px);
   left: 50%;
   transform: translateX(-50%);
   width: 280px;
@@ -943,11 +943,11 @@ function onNext() { router.push(getNextPath('/keyword-targeting')) }
 .kw-isir-tooltip::after {
   content: '';
   position: absolute;
-  top: 100%;
+  bottom: 100%;
   left: 50%;
   transform: translateX(-50%);
   border: 5px solid transparent;
-  border-top-color: #1c1f23;
+  border-bottom-color: #1c1f23;
 }
 
 .kw-isir-wrap:hover .kw-isir-tooltip {
