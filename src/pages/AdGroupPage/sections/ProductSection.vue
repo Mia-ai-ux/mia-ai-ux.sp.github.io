@@ -14,6 +14,8 @@
       Add
     </button>
 
+    <p v-if="error" class="error-msg">{{ error }}</p>
+
     <div class="product-list" v-if="form.products.length > 0">
       <div v-for="(p, i) in form.products" :key="p.id" class="ep-added-row">
         <div class="ep-product-card">
@@ -64,7 +66,7 @@
 </template>
 
 <script setup>
-import { ref, computed } from 'vue'
+import { ref, computed, watch, nextTick } from 'vue'
 import { storeToRefs } from 'pinia'
 import { Trash2 } from 'lucide-vue-next'
 import { useCampaignStore } from '@/stores/campaign'
@@ -77,8 +79,14 @@ import {
 const { form } = storeToRefs(useCampaignStore())
 
 const pickerOpen = ref(false)
+const error = ref('')
 
 const selectedIds = computed(() => form.value.products.map((p) => p.id))
+
+// Reactively clear error once at least one product is added
+watch(() => form.value.products.length, (len) => {
+  if (error.value && len > 0) error.value = ''
+})
 
 function roundRating(r) {
   return Math.min(5, Math.max(0, Math.round(Number(r) || 0)))
@@ -91,6 +99,28 @@ function removeProduct(i) {
 function onPickerConfirm(list) {
   form.value.products = list
 }
+
+function validate() {
+  const errorItems = []
+
+  if (form.value.products.length === 0) {
+    error.value = 'Please add at least one product.'
+    errorItems.push({ subItem: 'Product', label: 'Product', anchorId: 'section-product' })
+  } else {
+    error.value = ''
+  }
+
+  const ok = errorItems.length === 0
+  if (!ok) {
+    nextTick(() => {
+      const el = document.getElementById(errorItems[0].anchorId)
+      if (el) el.scrollIntoView({ behavior: 'smooth', block: 'center' })
+    })
+  }
+  return { ok, errorItems }
+}
+
+defineExpose({ validate })
 </script>
 
 <style scoped>
@@ -279,5 +309,12 @@ function onPickerConfirm(list) {
   border-radius: 50%;
   background: #424244;
   flex-shrink: 0;
+}
+
+.error-msg {
+  margin: 6px 0 0;
+  font-size: var(--text-sm, 13px);
+  color: var(--color-danger, #ef4444);
+  line-height: 1.4;
 }
 </style>

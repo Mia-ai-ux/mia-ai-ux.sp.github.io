@@ -1,13 +1,18 @@
 <template>
   <div class="page-layout">
     <div class="page-center">
-      <Stepper :steps="steps" :current-step="getStepNumber('/ad-group/manual')" :active-sub-item="activeSubItem" />
+      <Stepper
+        :steps="steps"
+        :current-step="getStepNumber('/ad-group/manual')"
+        :active-sub-item="activeSubItem"
+        :error-sub-items="errorSubItems"
+      />
 
       <div class="content-wrapper">
         <h2 class="page-title">Ad Group</h2>
         <main class="main-content">
-          <AdGroupNameSection />
-          <ProductSection />
+          <AdGroupNameSection ref="adGroupNameRef" />
+          <ProductSection ref="productRef" />
           <ManualTargetingSection />
         </main>
       </div>
@@ -18,19 +23,38 @@
 </template>
 
 <script setup>
-import { ref, onMounted, onUnmounted } from 'vue'
+import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useCampaignStore } from '@/stores/campaign'
+import { storeToRefs } from 'pinia'
 import Stepper from '@/components/Stepper.vue'
 import BottomBar from '@/components/BottomBar.vue'
 import AdGroupNameSection from './sections/AdGroupNameSection.vue'
 import ProductSection from './sections/ProductSection.vue'
 import ManualTargetingSection from './sections/ManualTargetingSection.vue'
 import { useFlowSteps } from '@/composables/useFlowSteps'
+import { useToast } from '@/components/ui/toast/useToast'
 
 const router = useRouter()
 const store = useCampaignStore()
+const { form } = storeToRefs(store)
 const { steps, getStepNumber, getNextPath, getBackPath } = useFlowSteps()
+const { toast } = useToast()
+
+const adGroupNameRef = ref(null)
+const productRef = ref(null)
+const hasTriedToSubmit = ref(false)
+
+const adGroupHasError = computed(() => !form.value.adGroupName?.trim())
+const productHasError = computed(() => form.value.products.length === 0)
+
+const errorSubItems = computed(() => {
+  if (!hasTriedToSubmit.value) return []
+  const errs = []
+  if (adGroupHasError.value) errs.push('Ad group name')
+  if (productHasError.value) errs.push('Product')
+  return errs
+})
 
 const subItems = [
   { label: 'Ad group name',    anchorId: 'section-ad-group-name' },
@@ -67,7 +91,32 @@ onUnmounted(() => {
 
 function onCancel() { router.push('/') }
 function onBack()   { router.push(getBackPath('/ad-group/manual')) }
-function onNext()   { router.push(getNextPath('/ad-group/manual')) }
+
+function onNext() {
+  const r1 = adGroupNameRef.value?.validate() ?? { ok: true, errorItems: [] }
+  const r2 = productRef.value?.validate()     ?? { ok: true, errorItems: [] }
+
+  const allErrors = [...r1.errorItems, ...r2.errorItems]
+
+  if (allErrors.length > 0) {
+    hasTriedToSubmit.value = true
+
+    const firstId = allErrors[0].anchorId
+    const el = document.getElementById(firstId)
+    if (el) el.scrollIntoView({ behavior: 'smooth', block: 'center' })
+
+    toast({
+      title: 'Please complete required fields',
+      description: allErrors.map(e => e.label).join('、') + ' cannot be empty.',
+      variant: 'destructive',
+      duration: 5000
+    })
+    return
+  }
+
+  hasTriedToSubmit.value = false
+  router.push(getNextPath('/ad-group/manual'))
+}
 </script>
 
 <style scoped>
