@@ -237,7 +237,7 @@ function placementBidHint(percentKey) {
   const mode = form.value.bidMode
   if (mode === 'up_down') {
     const maxUp = eff * 2
-    return `≈ ${start} · max ${formatUsd(maxUp)}`
+    return `∈ [${start}, ${formatUsd(maxUp)}]`
   }
   if (mode === 'down_only') {
     // bid can only go lower — the calculated value is the ceiling
