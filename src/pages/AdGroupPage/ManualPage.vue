@@ -125,7 +125,7 @@ function onNext() {
   display: flex;
   align-items: flex-start;
   gap: var(--sidebar-gap, 40px);
-  width: var(--content-width, 70vw);
+  width: var(--content-width, 80vw);
   max-width: 100%;
   box-sizing: border-box;
   padding: 40px 0 0;

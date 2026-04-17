@@ -60,8 +60,8 @@ function onConfirmCancel() {
   position: fixed;
   bottom: 0;
   /* 用 CSS 变量替代硬编码 calc，与布局保持同步 */
-  left: calc((100vw - var(--content-width, 70vw)) / 2 + var(--sidebar-width, 220px) + var(--sidebar-gap, 40px));
-  right: calc((100vw - var(--content-width, 70vw)) / 2);
+  left: calc((100vw - var(--content-width, 80vw)) / 2 + var(--sidebar-width, 220px) + var(--sidebar-gap, 40px));
+  right: calc((100vw - var(--content-width, 80vw)) / 2);
   z-index: 50;
   background: var(--bg-card);
   border-top: 1px solid var(--border);

@@ -277,7 +277,6 @@
                     <thead>
                       <tr>
                         <th>Product</th>
-                        <th>Bid</th>
                         <th class="ep-action-col" aria-label="Action"></th>
                       </tr>
                     </thead>
@@ -312,19 +311,6 @@
                               </div>
                             </div>
                           </template>
-                        </td>
-                        <td class="ep-col-bid">
-                          <span class="ep-bid-wrap">
-                            <span class="ep-currency">$</span>
-                            <input
-                              v-model.number="row.bid"
-                              class="ep-bid-input"
-                              type="number"
-                              step="0.01"
-                              min="0"
-                              placeholder="0.00"
-                            />
-                          </span>
                         </td>
                         <td class="ep-action-col">
                           <button type="button" class="ep-remove-btn" aria-label="Remove" @click="removeProduct(row.id)">×</button>
@@ -826,7 +812,7 @@ function onNext()   { router.push(getNextPath('/negative-targeting')) }
   display: flex;
   align-items: flex-start;
   gap: var(--sidebar-gap, 40px);
-  width: var(--content-width, 70vw);
+  width: var(--content-width, 80vw);
   max-width: 100%;
   box-sizing: border-box;
   padding: 40px 0 0;
@@ -1677,7 +1663,6 @@ function onNext()   { router.push(getNextPath('/negative-targeting')) }
 .ep-added-table tbody tr:hover { background: rgba(0,0,0,0.02); }
 
 .ep-col-product { width: auto; }
-.ep-col-bid { width: 80px; }
 .ep-action-col { width: 36px; text-align: center; }
 
 /* Product card in table */
@@ -1739,32 +1724,6 @@ function onNext()   { router.push(getNextPath('/negative-targeting')) }
 }
 
 .ep-asin-input::placeholder { color: #c0c8d8; }
-
-/* Bid input */
-.ep-bid-wrap {
-  display: inline-flex;
-  align-items: center;
-  gap: 2px;
-}
-
-.ep-currency {
-  font-size: 13px;
-  color: var(--text-sub);
-}
-
-.ep-bid-input {
-  width: 52px;
-  border: none;
-  background: transparent;
-  outline: none;
-  font-size: 13px;
-  font-family: inherit;
-  color: var(--text-main);
-  padding: 2px 0;
-}
-
-.ep-bid-input::-webkit-inner-spin-button,
-.ep-bid-input::-webkit-outer-spin-button { opacity: 0; }
 
 /* Remove (×) button */
 .ep-remove-btn {
