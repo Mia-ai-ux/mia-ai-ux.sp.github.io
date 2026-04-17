@@ -49,10 +49,6 @@
                   <dd>{{ siteTypeLabel }}</dd>
                 </div>
                 <div class="kv-item">
-                  <dt>Ad type</dt>
-                  <dd>SP {{ form.targeting === 'auto' ? 'Auto' : 'Manual' }}</dd>
-                </div>
-                <div class="kv-item">
                   <dt>Daily budget</dt>
                   <dd>${{ Number(form.dailyBudget).toFixed(2) }}</dd>
                 </div>
@@ -141,6 +137,118 @@
             </div>
           </div>
 
+          <!-- Bid ceiling preview (placement × strategy × audience; auto vs manual base) -->
+          <div class="review-card review-card--bid-ceiling">
+            <div class="review-card__head">
+              <div class="review-card__title-with-tooltip">
+                <span class="review-card__step">Bid ceiling preview</span>
+                <div class="tooltip-wrap bid-ceiling-title-tooltip">
+                  <img
+                    :src="iconHelpCircle"
+                    width="14"
+                    height="14"
+                    alt=""
+                    class="help-icon-trigger help-icon-trigger--sm"
+                  />
+                  <div class="tooltip-bubble bid-ceiling-title-tooltip__bubble">
+                    {{ bidCeilingTitleTooltip }}
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="review-card__body review-card__body--flush">
+              <p v-if="form.targeting === 'manual'" class="bid-ceiling-intro">
+                Manual targeting uses the single highest bid among your keywords or product targets as the placement base.
+              </p>
+              <template v-if="form.targeting === 'auto'">
+                <p v-if="form.autoBidMode === 'default_bid'" class="bid-ceiling-base">
+                  Placement base (ad group default bid, all groups):
+                  <strong>${{ bidCeilingDefaultBidDisplay }}</strong>
+                </p>
+                <div class="bid-cap-scroll">
+                  <table class="bid-cap-table">
+                    <thead>
+                      <tr>
+                        <th>Targeting group</th>
+                        <th>Top of search</th>
+                        <th>Rest of search</th>
+                        <th>Product pages</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr
+                        v-for="row in autoBidCapRows"
+                        :key="row.key"
+                        :class="{ 'is-off': !row.enabled }"
+                      >
+                        <td>{{ row.label }}<span v-if="!row.enabled" class="muted"> (off)</span></td>
+                        <td>{{ formatCapCell(row.caps, 'bidTop') }}</td>
+                        <td>{{ formatCapCell(row.caps, 'bidRest') }}</td>
+                        <td>{{ formatCapCell(row.caps, 'bidProduct') }}</td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+              </template>
+              <template v-else-if="form.targeting === 'manual' && form.manualTargetType === 'keyword'">
+                <template v-if="manualKeywordCeiling">
+                  <p class="bid-ceiling-base">
+                    Highest bid keyword:
+                    <strong>{{ manualKeywordCeiling.label }}</strong>
+                    · bid <strong>${{ manualKeywordCeiling.bid.toFixed(2) }}</strong>
+                  </p>
+                  <div class="bid-cap-scroll">
+                    <table class="bid-cap-table bid-cap-table--single">
+                      <thead>
+                        <tr>
+                          <th>Top of search</th>
+                          <th>Rest of search</th>
+                          <th>Product pages</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        <tr>
+                          <td>{{ formatCapCell(manualKeywordCeiling.caps, 'bidTop') }}</td>
+                          <td>{{ formatCapCell(manualKeywordCeiling.caps, 'bidRest') }}</td>
+                          <td>{{ formatCapCell(manualKeywordCeiling.caps, 'bidProduct') }}</td>
+                        </tr>
+                      </tbody>
+                    </table>
+                  </div>
+                </template>
+                <p v-else class="bid-ceiling-empty">Add at least one keyword to see bid ceilings.</p>
+              </template>
+              <template v-else-if="form.targeting === 'manual' && form.manualTargetType === 'product'">
+                <template v-if="manualProductCeiling">
+                  <p class="bid-ceiling-base">
+                    Highest bid target:
+                    <strong>{{ manualProductCeiling.label }}</strong>
+                    · bid <strong>${{ manualProductCeiling.bid.toFixed(2) }}</strong>
+                  </p>
+                  <div class="bid-cap-scroll">
+                    <table class="bid-cap-table bid-cap-table--single">
+                      <thead>
+                        <tr>
+                          <th>Top of search</th>
+                          <th>Rest of search</th>
+                          <th>Product pages</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        <tr>
+                          <td>{{ formatCapCell(manualProductCeiling.caps, 'bidTop') }}</td>
+                          <td>{{ formatCapCell(manualProductCeiling.caps, 'bidRest') }}</td>
+                          <td>{{ formatCapCell(manualProductCeiling.caps, 'bidProduct') }}</td>
+                        </tr>
+                      </tbody>
+                    </table>
+                  </div>
+                </template>
+                <p v-else class="bid-ceiling-empty">Add at least one category or product target to see bid ceilings.</p>
+              </template>
+            </div>
+          </div>
+
           <!-- Card 3: Keyword Targeting (manual + keyword only) -->
           <div v-if="form.targeting === 'manual' && form.manualTargetType === 'keyword'" class="review-card">
             <div class="review-card__head">
@@ -154,12 +262,8 @@
                   <dd>{{ form.keywords.length }}</dd>
                 </div>
                 <div class="kv-item">
-                  <dt>Default bid</dt>
-                  <dd>${{ Number(form.keywordTargetingDefaultBid).toFixed(2) }}</dd>
-                </div>
-                <div class="kv-item">
                   <dt>Match types</dt>
-                  <dd>{{ activeMatchTypes }}</dd>
+                  <dd>{{ keywordReviewMatchTypes }}</dd>
                 </div>
               </dl>
             </div>
@@ -244,6 +348,11 @@ import Stepper from '@/components/Stepper.vue'
 import BottomBar from '@/components/BottomBar.vue'
 import { useFlowSteps } from '@/composables/useFlowSteps'
 import { useCampaignStore } from '@/stores/campaign'
+import iconHelpCircle from '@/assets/icon-help-circle.svg'
+
+/** Hover 说明：与正文 intro 含义一致（中文） */
+const bidCeilingTitleTooltip =
+  '下面显示的是：在考虑广告位百分比、你选的竞价策略，以及（若开启）人群加价之后，单次出价大概最高能到多少美元——属于预览估算。'
 
 const router   = useRouter()
 const { steps, getStepNumber, getBackPath } = useFlowSteps()
@@ -389,13 +498,127 @@ const autoGroupBidsSummary = computed(() => {
   return parts.length ? parts.join(' · ') : '—'
 })
 
-const activeMatchTypes = computed(() => {
-  const m = form.value.keywordTargetingMatchTypes
-  const names = []
-  if (m?.exact)  names.push('Exact')
-  if (m?.broad)  names.push('Broad')
-  if (m?.phrase) names.push('Phrase')
-  return names.length ? names.join(', ') : '—'
+// ── Bid ceiling preview (placement × strategy × audience) ─────
+
+const AUTO_GROUP_ROW_DEFS = [
+  { key: 'closeMatch', label: 'Close match' },
+  { key: 'looseMatch', label: 'Loose match' },
+  { key: 'substitutes', label: 'Substitutes' },
+  { key: 'complements', label: 'Complements' },
+]
+
+function safeNum(v) {
+  const n = Number(v)
+  return Number.isFinite(n) && n >= 0 ? n : 0
+}
+
+/** Per-placement caps for a single placement base (USD). */
+function computeCapsForBase(base, f) {
+  const b = safeNum(base)
+  if (b <= 0) return null
+  const audMult =
+    f.audienceMode !== 'don_t_increase'
+      ? 1 + safeNum(f.audiencePct) / 100
+      : 1
+  const dynFactor = f.bidMode === 'up_down' ? 2 : 1
+  const keys = ['bidTop', 'bidRest', 'bidProduct']
+  const caps = {}
+  for (const key of keys) {
+    const afterPlacement = b * (1 + safeNum(f[key]) / 100)
+    const afterDynamic = afterPlacement * dynFactor
+    caps[key] = Math.round(afterDynamic * audMult * 100) / 100
+  }
+  return caps
+}
+
+function formatCapCell(caps, key) {
+  if (!caps || caps[key] == null || !Number.isFinite(caps[key])) return '—'
+  return `$${Number(caps[key]).toFixed(2)}`
+}
+
+function productTargetLabel(t) {
+  if (!t) return 'Target'
+  if (t.title) return String(t.title)
+  if (t.asin) return String(t.asin)
+  if (t.path) return String(t.path)
+  return 'Target'
+}
+
+const bidCeilingDefaultBidDisplay = computed(() => safeNum(form.value.adGroupBid).toFixed(2))
+
+const autoBidCapRows = computed(() => {
+  const f = form.value
+  const useDefault = f.autoBidMode === 'default_bid'
+  const defaultBase = safeNum(f.adGroupBid)
+  return AUTO_GROUP_ROW_DEFS.map(({ key, label }) => {
+    const row = f.autoGroups[key]
+    const enabled = Boolean(row?.enabled)
+    const baseBid = useDefault ? defaultBase : safeNum(row?.bid)
+    const caps = computeCapsForBase(baseBid, f)
+    return { key, label, enabled, caps }
+  })
+})
+
+const manualKeywordCeiling = computed(() => {
+  const f = form.value
+  const kws = f.keywords ?? []
+  if (!kws.length) return null
+  let best = null
+  let maxBid = -1
+  for (const k of kws) {
+    const b = safeNum(k.bid)
+    if (b > maxBid) {
+      maxBid = b
+      best = k
+    }
+  }
+  if (!best) return null
+  const bid = safeNum(best.bid)
+  const caps = computeCapsForBase(bid, f)
+  const label = best.text ? String(best.text) : 'Keyword'
+  return { label, bid, caps }
+})
+
+const manualProductCeiling = computed(() => {
+  const f = form.value
+  const targets = f.productTargets ?? []
+  if (!targets.length) return null
+  let best = null
+  let maxBid = -1
+  for (const t of targets) {
+    const b = safeNum(t.bid)
+    if (b > maxBid) {
+      maxBid = b
+      best = t
+    }
+  }
+  if (!best) return null
+  const bid = safeNum(best.bid)
+  const caps = computeCapsForBase(bid, f)
+  return { label: productTargetLabel(best), bid, caps }
+})
+
+/** 与右侧已添加列表一致：按 keywords[].matchType 汇总，而非左侧勾选状态 */
+const keywordReviewMatchTypes = computed(() => {
+  const kws = form.value.keywords ?? []
+  if (!kws.length) return '—'
+  const priority = ['Exact', 'Phrase', 'Broad']
+  const canon = (s) => {
+    const t = String(s ?? '').trim().toLowerCase()
+    if (t === 'exact') return 'Exact'
+    if (t === 'phrase') return 'Phrase'
+    if (t === 'broad') return 'Broad'
+    return String(s ?? '').trim() || null
+  }
+  const seen = new Set()
+  for (const k of kws) {
+    const label = canon(k.matchType)
+    if (label) seen.add(label)
+  }
+  const ordered = priority.filter((x) => seen.has(x))
+  const rest = [...seen].filter((x) => !priority.includes(x))
+  const all = [...ordered, ...rest]
+  return all.length ? all.join(', ') : '—'
 })
 
 const categoryTargetCount = computed(() =>
@@ -573,6 +796,65 @@ function onSubmit() {
   letter-spacing: 0.01em;
 }
 
+.review-card__title-with-tooltip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.bid-ceiling-title-tooltip {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+.bid-ceiling-title-tooltip__bubble {
+  display: none;
+  position: absolute;
+  left: 50%;
+  top: calc(100% + 8px);
+  transform: translateX(-50%);
+  background: #1c1f23;
+  color: #fff;
+  font-size: 13px;
+  font-weight: 400;
+  line-height: 1.55;
+  padding: 10px 14px;
+  border-radius: 6px;
+  width: min(320px, calc(100vw - 48px));
+  max-width: 90vw;
+  z-index: 30;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.18);
+  pointer-events: none;
+}
+
+.bid-ceiling-title-tooltip__bubble::before {
+  content: '';
+  position: absolute;
+  left: 50%;
+  top: -6px;
+  transform: translateX(-50%);
+  border-width: 0 6px 6px 6px;
+  border-style: solid;
+  border-color: transparent transparent #1c1f23 transparent;
+}
+
+.bid-ceiling-title-tooltip:hover .bid-ceiling-title-tooltip__bubble {
+  display: block;
+}
+
+.help-icon-trigger--sm {
+  display: block;
+  opacity: 0.55;
+  cursor: help;
+  vertical-align: middle;
+}
+
+.bid-ceiling-title-tooltip:hover .help-icon-trigger--sm {
+  opacity: 0.9;
+}
+
 .review-card__edit {
   background: none;
   border: none;
@@ -587,6 +869,78 @@ function onSubmit() {
 
 .review-card__body {
   padding: 20px 24px;
+}
+
+.review-card__body--flush {
+  padding-top: 16px;
+}
+
+.bid-ceiling-intro {
+  margin: 0 0 14px;
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--text-sub);
+}
+
+.bid-ceiling-base {
+  margin: 0 0 12px;
+  font-size: 14px;
+  color: var(--text-main);
+}
+
+.bid-ceiling-base strong {
+  font-weight: 600;
+}
+
+.bid-ceiling-empty {
+  margin: 0;
+  font-size: 14px;
+  color: var(--text-sub);
+}
+
+.bid-cap-scroll {
+  overflow-x: auto;
+  margin: 0 -4px;
+  padding: 0 4px;
+}
+
+.bid-cap-table {
+  width: 100%;
+  min-width: 480px;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+
+.bid-cap-table th,
+.bid-cap-table td {
+  text-align: left;
+  padding: 10px 12px;
+  border-bottom: 1px solid var(--border);
+  vertical-align: middle;
+}
+
+.bid-cap-table th {
+  font-weight: 600;
+  color: var(--text-sub);
+  font-size: 12px;
+  background: #fafbfc;
+}
+
+.bid-cap-table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.bid-cap-table tbody tr.is-off td {
+  color: var(--text-sub);
+}
+
+.bid-cap-table .muted {
+  font-weight: 400;
+  color: var(--text-sub);
+}
+
+.bid-cap-table--single {
+  min-width: 320px;
 }
 
 /* ── key-value grid ─────────────────────────── */

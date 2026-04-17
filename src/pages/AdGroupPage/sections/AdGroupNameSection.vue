@@ -22,6 +22,24 @@ import UiInput from '@/components/ui/input/Input.vue'
 const { form } = storeToRefs(useCampaignStore())
 const error = ref('')
 
+/** 取 Campaign name 按「+」分割后的前两段（与命名规范 ASIN+Model+… 对齐） */
+function adGroupNameFromCampaignFirstTwoFields(campaignName) {
+  const s = String(campaignName ?? '').trim()
+  if (!s) return ''
+  const parts = s.split('+').map((p) => p.trim()).filter(Boolean)
+  if (!parts.length) return ''
+  if (parts.length === 1) return parts[0]
+  return `${parts[0]}+${parts[1]}`
+}
+
+watch(
+  () => form.value.campaignName,
+  (cn) => {
+    form.value.adGroupName = adGroupNameFromCampaignFirstTwoFields(cn)
+  },
+  { immediate: true }
+)
+
 // Reactively clear error once the field becomes valid
 watch(() => form.value.adGroupName, (val) => {
   if (error.value && val?.trim()) error.value = ''

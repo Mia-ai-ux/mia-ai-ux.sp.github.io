@@ -10,7 +10,7 @@ export const useCampaignStore = defineStore('campaign', () => {
   const form = ref({
     // ── Step 1: Campaign ──────────────────────────
     siteType: 'amazon_and_beyond',
-    campaignName: `Campaign-${dateStr}`,
+    campaignName: '',
     dailyBudget: 20.0,
     scheduleType: 'continuous',
     startTime: todayDate,
@@ -26,7 +26,7 @@ export const useCampaignStore = defineStore('campaign', () => {
     targeting: 'auto',
 
     // ── Step 2: Ad Group ──────────────────────────
-    adGroupName: `Ad group-${dateStr}`,
+    adGroupName: '',
     adGroupBid: 7.5,
 
     // Ad group products: { id, asin, title, image, rating, reviews, originalPrice, price, inStock }

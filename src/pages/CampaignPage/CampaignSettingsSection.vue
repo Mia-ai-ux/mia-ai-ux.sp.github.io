@@ -8,12 +8,13 @@
         Campaign Name <span class="required">*</span>
       </label>
       <div class="input-wrap">
-        <UiInput
+        <UiCombobox
           id="campaignName"
-          size="lg"
           v-model="form.campaignName"
-          :class="{ 'input-error': errors.campaignName }"
-          @input="errors.campaignName = ''"
+          size="lg"
+          placeholder="ASIN+Model+Ucie+自定义"
+          :options="campaignNamePresets"
+          @update:model-value="errors.campaignName = ''"
         />
       </div>
       <p v-if="errors.campaignName" class="error-msg">{{ errors.campaignName }}</p>
@@ -132,14 +133,27 @@ import { ref, reactive, watch, nextTick } from 'vue'
 import { storeToRefs } from 'pinia'
 import { useCampaignStore } from '@/stores/campaign'
 import InlineNumberInput from '@/components/base/InlineNumberInput.vue'
-import UiInput from '@/components/ui/input/Input.vue'
 import UiSelect from '@/components/ui/select/Select.vue'
+import UiCombobox from '@/components/ui/combobox/Combobox.vue'
 import UiButton from '@/components/ui/button/Button.vue'
 import iconHelpCircle from '@/assets/icon-help-circle.svg'
 import DatePicker from '@/components/ui/date-picker/DatePicker.vue'
 
 const { form } = storeToRefs(useCampaignStore())
 const advancedOpen = ref(false)
+
+/** Campaign name 下拉：已有命名示例（后续可接 API 替换） */
+const campaignNamePresets = [
+  'B0BT7LPSBY+DR-HTF007 White+Ucie+SPM+KT+Phrase',
+  'B09MKPDJRT+DR-HTF007+Ucie+SBV+KT+Main keywords+Phrase',
+  'B0BT7LPSBY+DR-HTF007 White+Ucie+SPM+KT+fan/tower fan+exact',
+  'B0FXGK76DF+DR-HHM006+Ucie+SPM+KT+Main Keywords+Exact',
+  'B09MKPDJRT/B08PDDSDHY/B0BTY58CS4+DR-HTF007+Ucie+SB+KT+Main keywords+Exact+St',
+  'B0BT7LPSBY+DR-HTF007 White+Ucie+SPM+KT+Main keywords',
+  'B09MKPDJRT/B09M8PMW26/B08P5NNNL5+DR-HTF007+Ucie+SB+KT+Main keywords+Phrase+',
+  'B0DZ6VRPT7+DR-HTF017 Black+Ucie+SPM+KT+MK+Phrase',
+  'B0DZ6VRPT7+DR-HTF017 Black+Ucie+SPM+KT',
+]
 
 /** 今日字符串 'YYYY-MM-DD'，用作日期选择器的 min 值（禁止选过去日期） */
 const _today = new Date()
@@ -273,8 +287,13 @@ h2 {
   width: 100%;
 }
 
-/* 错误状态下输入框红色边框（透过 :deep 兼容 UI 组件） */
-.has-error :deep(input),
+/* Campaign name：与块级 label 同宽，便于长名称整行编辑 */
+#field-campaign-name .input-wrap {
+  max-width: none;
+}
+
+/* 错误状态下输入框红色边框（透过 :deep 兼容 UI 组件；排除 combobox 内搜索框） */
+.has-error :deep(.ui-combobox__input),
 .has-error :deep(.inline-number-input) {
   border-color: var(--color-danger) !important;
 }
