@@ -157,9 +157,6 @@
               </div>
             </div>
             <div class="review-card__body review-card__body--flush">
-              <p v-if="form.targeting === 'manual'" class="bid-ceiling-intro">
-                Manual targeting uses the single highest bid among your keywords or product targets as the placement base.
-              </p>
               <template v-if="form.targeting === 'auto'">
                 <p v-if="form.autoBidMode === 'default_bid'" class="bid-ceiling-base">
                   Placement base (ad group default bid, all groups):
@@ -873,13 +870,6 @@ function onSubmit() {
 
 .review-card__body--flush {
   padding-top: 16px;
-}
-
-.bid-ceiling-intro {
-  margin: 0 0 14px;
-  font-size: 13px;
-  line-height: 1.5;
-  color: var(--text-sub);
 }
 
 .bid-ceiling-base {

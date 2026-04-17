@@ -42,6 +42,13 @@ export const useCampaignStore = defineStore('campaign', () => {
       substitutes:  { enabled: true,  bid: 0 },
       complements:  { enabled: true,  bid: 0 }
     },
+    /** Per-group: user edited bid in UI; persists across steps so adGroupBid watch does not reset bids */
+    autoGroupBidTouched: {
+      closeMatch: false,
+      looseMatch: false,
+      substitutes: false,
+      complements: false,
+    },
 
     // Manual targeting
     manualTargetType: 'keyword',   // 'keyword' | 'product'
@@ -87,6 +94,12 @@ export const useCampaignStore = defineStore('campaign', () => {
     form.value.targeting = 'auto'
     form.value.scheduleType = 'continuous'
     form.value.manualTargetType = 'keyword'
+    form.value.autoGroupBidTouched = {
+      closeMatch: false,
+      looseMatch: false,
+      substitutes: false,
+      complements: false,
+    }
   }
 
   return { form, reset }

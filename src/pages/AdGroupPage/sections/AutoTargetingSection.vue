@@ -144,7 +144,7 @@
 </template>
 
 <script setup>
-import { ref, reactive, watch } from 'vue'
+import { ref, watch } from 'vue'
 import { storeToRefs } from 'pinia'
 import { useCampaignStore } from '@/stores/campaign'
 import InlineNumberInput from '@/components/base/InlineNumberInput.vue'
@@ -202,13 +202,10 @@ const groups = [
   },
 ]
 
-const touched = reactive({
-  closeMatch: false, looseMatch: false, substitutes: false, complements: false
-})
-
 watch(
   () => form.value.adGroupBid,
   (newBid) => {
+    const touched = form.value.autoGroupBidTouched
     for (const g of groups) {
       if (!touched[g.key]) {
         form.value.autoGroups[g.key].bid = newBid
@@ -219,7 +216,7 @@ watch(
 )
 
 function onBidInput(key, val) {
-  touched[key] = true
+  form.value.autoGroupBidTouched[key] = true
   form.value.autoGroups[key].bid = val
 }
 </script>
