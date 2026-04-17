@@ -32,6 +32,9 @@ export const useCampaignStore = defineStore('campaign', () => {
     // Ad group products: { id, asin, title, image, rating, reviews, originalPrice, price, inStock }
     products: [],
 
+    // Automatic targeting bid mode
+    autoBidMode: 'targeting_group',   // 'targeting_group' | 'default_bid'
+
     // Automatic targeting – per group + default (default uses adGroupBid, same as Bid adjustment base)
     autoGroups: {
       closeMatch:   { enabled: true,  bid: 0 },
@@ -44,7 +47,7 @@ export const useCampaignStore = defineStore('campaign', () => {
     manualTargetType: 'keyword',   // 'keyword' | 'product'
 
     // Keyword targeting step (UI state)
-    keywordTargetTab: 'campaigns',  // 'amazon' | 'campaigns'
+    keywordTargetTab: 'enter',  // 'enter' | 'amazon' | 'campaigns'
     keywordTargetingDefaultBid: 0.07,
     keywordTargetingMatchTypes: { exact: true, broad: false, phrase: false },
     keywordSelectedCampaignId: '',
@@ -67,8 +70,8 @@ export const useCampaignStore = defineStore('campaign', () => {
 
     // Product targeting step
     productTargetMode: 'category',           // 'category' | 'product'
-    productCategoryTab: 'campaigns',         // 'suggested' | 'search' | 'campaigns'
-    productProductTab: 'campaigns',          // 'suggested' | 'library' | 'campaigns' | 'manual'
+    productCategoryTab: 'suggested',         // 'suggested' | 'search'
+    productProductTab: 'enter',              // 'enter' | 'campaigns' | 'suggested'
     productTargetingDefaultBid: 0.02,
     productDeliveryType: { exact: true, expanded: false },
     productAsinTheme: 'similar',
@@ -76,11 +79,6 @@ export const useCampaignStore = defineStore('campaign', () => {
     productSelectedAdGroupId: '',
     // Added targets (right panel): { id, kind, title, subtitle?, path?, asin?, image?, deliveryType, suggestBid, suggestRange, bid, checked }
     productTargets: [],
-    // Mock pool for product library tab
-    libraryProductAsins: [
-      { id: 'lp1', asin: 'B0C5CV8CTW', title: 'Dreo Ceramic Heater', image: 'https://m.media-amazon.com/images/I/81G+4gzszVL._AC_SY879_.jpg', suggestBid: '$0.89', suggestRange: '$0.65–$1.05' },
-      { id: 'lp2', asin: 'B09XK2DTVP', title: 'Vornado MVH Vortex Heater', image: 'https://m.media-amazon.com/images/I/71pB9RvWyRL._AC_SL1500_.jpg', suggestBid: '$0.76', suggestRange: '$0.55–$0.94' }
-    ]
   })
 
   function reset() {

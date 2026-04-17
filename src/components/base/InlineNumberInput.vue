@@ -1,11 +1,12 @@
 <template>
-  <div class="inline-input" :class="`inline-input--${size}`">
+  <div class="inline-input" :class="[`inline-input--${size}`, { 'inline-input--disabled': disabled }]">
     <span v-if="prefix" class="affix prefix">{{ prefix }}</span>
     <input
       type="number"
       :value="modelValue"
       :step="step"
       :min="min"
+      :disabled="disabled"
       @input="emit('update:modelValue', +$event.target.value)"
     />
     <span v-if="suffix" class="affix suffix">{{ suffix }}</span>
@@ -20,6 +21,7 @@ defineProps({
   step:       { type: Number, default: 1 },
   min:        { type: Number, default: 0 },
   size:       { type: String, default: 'default' }, // 'sm' | 'default' | 'lg'
+  disabled:   { type: Boolean, default: false },
 })
 
 const emit = defineEmits(['update:modelValue'])
@@ -40,6 +42,21 @@ const emit = defineEmits(['update:modelValue'])
 .inline-input:focus-within {
   border-color: #3b82f6;
   box-shadow: 0 0 0 3px rgba(59,130,246,.15);
+}
+
+.inline-input--disabled {
+  background: #f9fafb;
+  border-color: #e5e7eb;
+  cursor: not-allowed;
+}
+.inline-input--disabled input {
+  color: #9ca3af !important;
+  -webkit-text-fill-color: #9ca3af;
+  cursor: not-allowed;
+}
+.inline-input--disabled .affix {
+  background: #f9fafb;
+  color: #c0c8d8;
 }
 
 /* ── Sizes ── */

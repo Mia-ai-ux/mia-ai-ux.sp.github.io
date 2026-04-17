@@ -45,6 +45,10 @@
                   <dd>{{ form.campaignName }}</dd>
                 </div>
                 <div class="kv-item">
+                  <dt>Sites</dt>
+                  <dd>{{ siteTypeLabel }}</dd>
+                </div>
+                <div class="kv-item">
                   <dt>Ad type</dt>
                   <dd>SP {{ form.targeting === 'auto' ? 'Auto' : 'Manual' }}</dd>
                 </div>
@@ -52,17 +56,33 @@
                   <dt>Daily budget</dt>
                   <dd>${{ Number(form.dailyBudget).toFixed(2) }}</dd>
                 </div>
-                <div class="kv-item">
+                <div v-if="hasScheduleSummary" class="kv-item">
                   <dt>Schedule</dt>
                   <dd>{{ form.startTime || '—' }} ~ {{ form.endTime || 'No end date' }}</dd>
+                </div>
+                <div v-if="hasPortfolio" class="kv-item">
+                  <dt>Portfolio</dt>
+                  <dd>{{ portfolioLabel }}</dd>
                 </div>
                 <div class="kv-item">
                   <dt>Bidding strategy</dt>
                   <dd>{{ bidModeLabel }}</dd>
                 </div>
+                <div v-if="hasPlacementBidAdj" class="kv-item">
+                  <dt>Placement bid adjustments</dt>
+                  <dd>{{ placementsSummary }}</dd>
+                </div>
+                <div class="kv-item">
+                  <dt>Audience mode</dt>
+                  <dd>{{ audienceModeLabel }}</dd>
+                </div>
+                <div v-if="showAudienceTargetRow" class="kv-item">
+                  <dt>Audience</dt>
+                  <dd>{{ audienceTargetLine }}</dd>
+                </div>
                 <div class="kv-item">
                   <dt>Targeting type</dt>
-                  <dd>{{ form.targeting === 'auto' ? 'Automatic' : 'Manual' }}</dd>
+                  <dd>{{ targetingTypeLabel }}</dd>
                 </div>
               </dl>
             </div>
@@ -81,15 +101,31 @@
                   <dt>Ad group name</dt>
                   <dd>{{ form.adGroupName }}</dd>
                 </div>
-                <div class="kv-item">
+                <div v-if="form.targeting !== 'auto'" class="kv-item">
                   <dt>Default bid</dt>
                   <dd>${{ Number(form.adGroupBid).toFixed(2) }}</dd>
                 </div>
+                <template v-else-if="form.autoBidMode === 'default_bid'">
+                  <div class="kv-item">
+                    <dt>Bid pricing</dt>
+                    <dd>Set default bid — ${{ Number(form.adGroupBid).toFixed(2) }}</dd>
+                  </div>
+                </template>
+                <template v-else>
+                  <div class="kv-item">
+                    <dt>Bid pricing</dt>
+                    <dd>Set bids by targeting group</dd>
+                  </div>
+                  <div class="kv-item">
+                    <dt>Group bids</dt>
+                    <dd>{{ autoGroupBidsSummary }}</dd>
+                  </div>
+                </template>
                 <div class="kv-item">
                   <dt>Products</dt>
                   <dd>{{ form.products.length }} selected</dd>
                 </div>
-                <template v-if="form.targeting === 'auto'">
+                <template v-if="form.targeting === 'auto' && form.autoBidMode === 'default_bid'">
                   <div class="kv-item">
                     <dt>Auto targeting groups</dt>
                     <dd>{{ enabledAutoGroups }}</dd>
@@ -219,12 +255,111 @@ const launched   = ref(false)
 
 const maxStep = computed(() => Math.max(...steps.value.map(s => s.step)))
 
+// ── Campaign plan lookups (mirror CampaignSettings / BiddingStrategy) ──
+
+const PORTFOLIO_OPTIONS = [
+  { value: 'none', label: 'No Portfolio' },
+  { value: 'hhm004s-black-2000', label: 'HHM004S Balck-2000' },
+  { value: 'dr-htf005-2000', label: 'DR-HTF005-2000' },
+  { value: 'dr-hac001-2000', label: 'DR-HAC001-2000' },
+  { value: 'dr-hap002-1500', label: 'DR-HAP002-1500' },
+  { value: 'dr-hec001-hec002s-300', label: 'DR-HEC001/DR-HEC002S-300' },
+]
+
+const AMAZON_AUDIENCE_OPTIONS = [
+  { value: 'amazon_interest', label: 'Amazon Interest Audiences' },
+  { value: 'amazon_lifestyle', label: 'Amazon Lifestyle Segments' },
+  { value: 'amazon_inmarket', label: 'In-Market Audiences' },
+  { value: 'amazon_remarketing', label: 'Remarketing Audiences' },
+]
+
+const AMC_AUDIENCE_OPTIONS = [
+  { value: 'amc_1', label: 'AMC AMC Test_Audience_Cart_Abandon_20251222_6 - 403316359709171985' },
+  { value: 'amc_2', label: 'AMC DREO-DSP 1 DPV/Exclude Purchase-DSP-L14D-Rule based - 376373797466773890' },
+  { value: 'amc_3', label: 'AMC DREO-High Value Audiences/Top30%-NA&AD-L30D - BalancedLookalike - 404953712003503637' },
+  { value: 'amc_4', label: 'AMC Household Fan-DSP 1~3 DPV/Exclude Purchase or SA clicks-DSP-L14D-Rule based - 393375133049604205' },
+  { value: 'amc_5', label: 'AMC AMC Test_Audience_Cart_Abandon_20251222_4 - 395120201479263450' },
+  { value: 'amc_6', label: 'AMC Tower Fan_DSP Campaign Impression_Min3_DSP_L30D_Rule based - 386547894924918884' },
+  { value: 'amc_7', label: 'AMC Tower Fan_KW Search_SA_L30D_Rule based - 413307513012821463' },
+  { value: 'amc_8', label: 'AMC AMC Test_Audience_Cart_Abandon_20251222_7 - 375875559998058170' },
+  { value: 'amc_9', label: 'AMC AMC Water Filter-Search Not Purchase-L30D-Rule based-ST&ASIN - 400225369521613229' },
+  { value: 'amc_10', label: 'AMC Space Heater SA brand keywords & no purchase L7D Rule based - 382177465223739296' },
+]
+
 // ── Derived labels ─────────────────────────────────────────────
 
 const bidModeLabel = computed(() => {
-  const map = { fixed: 'Fixed bids', dynamic_up: 'Dynamic bids – up and down', dynamic_down: 'Dynamic bids – down only' }
+  const map = {
+    up_down: 'Dynamic bids - up and down',
+    down_only: 'Dynamic bids - down only',
+    fixed: 'Fixed bids',
+  }
   return map[form.value.bidMode] ?? form.value.bidMode
 })
+
+const siteTypeLabel = computed(() =>
+  form.value.siteType === 'amazon_business' ? 'Amazon Business' : 'Amazon and beyond'
+)
+
+const hasPortfolio = computed(() => {
+  const v = form.value.portfolio
+  return v !== '' && v != null
+})
+
+const portfolioLabel = computed(() => {
+  const v = form.value.portfolio
+  return PORTFOLIO_OPTIONS.find(o => o.value === v)?.label ?? String(v)
+})
+
+const hasScheduleSummary = computed(
+  () => Boolean(form.value.startTime) || Boolean(form.value.endTime)
+)
+
+const hasPlacementBidAdj = computed(() => {
+  const t = Number(form.value.bidTop) || 0
+  const r = Number(form.value.bidRest) || 0
+  const p = Number(form.value.bidProduct) || 0
+  return t !== 0 || r !== 0 || p !== 0
+})
+
+const showAudienceTargetRow = computed(
+  () =>
+    form.value.audienceMode !== 'don_t_increase' &&
+    (Boolean(form.value.audienceId) || Number(form.value.audiencePct) > 0)
+)
+
+const placementsSummary = computed(() => {
+  const t = Number(form.value.bidTop) || 0
+  const r = Number(form.value.bidRest) || 0
+  const p = Number(form.value.bidProduct) || 0
+  return `Top of search (first page): ${t}%, Rest of search: ${r}%, Product pages: ${p}%`
+})
+
+const audienceModeLabel = computed(() => {
+  const m = form.value.audienceMode
+  if (m === 'increase_amazon_built') return 'Increase bids for audiences built by Amazon'
+  if (m === 'increase_amc_custom') {
+    return 'Increase bids on a custom audience created in Amazon Marketing Cloud (AMC)'
+  }
+  return "Don't increase bids for an audience"
+})
+
+const audienceIdLabel = computed(() => {
+  const id = form.value.audienceId
+  if (!id) return ''
+  const all = [...AMAZON_AUDIENCE_OPTIONS, ...AMC_AUDIENCE_OPTIONS]
+  return all.find(o => o.value === id)?.label ?? id
+})
+
+const audienceTargetLine = computed(() => {
+  const name = audienceIdLabel.value || 'Not selected'
+  const pct = Number(form.value.audiencePct) || 0
+  return `${name} · ${pct}%`
+})
+
+const targetingTypeLabel = computed(() =>
+  form.value.targeting === 'auto' ? 'Automatic targeting' : 'Manual targeting'
+)
 
 const enabledAutoGroups = computed(() => {
   const g = form.value.autoGroups
@@ -234,6 +369,24 @@ const enabledAutoGroups = computed(() => {
   if (g.substitutes?.enabled) names.push('Substitutes')
   if (g.complements?.enabled) names.push('Complements')
   return names.length ? names.join(', ') : 'None'
+})
+
+/** Launch review: per-group bid amounts when autoBidMode is targeting_group */
+const autoGroupBidsSummary = computed(() => {
+  const defs = [
+    { key: 'closeMatch', label: 'Close match' },
+    { key: 'looseMatch', label: 'Loose match' },
+    { key: 'substitutes', label: 'Substitutes' },
+    { key: 'complements', label: 'Complements' },
+  ]
+  const g = form.value.autoGroups
+  const parts = []
+  for (const { key, label } of defs) {
+    const row = g[key]
+    if (!row?.enabled) continue
+    parts.push(`${label}: $${Number(row.bid).toFixed(2)}`)
+  }
+  return parts.length ? parts.join(' · ') : '—'
 })
 
 const activeMatchTypes = computed(() => {
@@ -454,8 +607,7 @@ function onSubmit() {
   font-size: 12px;
   color: var(--text-sub);
   font-weight: 500;
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
+  letter-spacing: 0.01em;
 }
 
 .kv-item dd {

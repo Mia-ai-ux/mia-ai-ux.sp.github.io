@@ -10,10 +10,118 @@
     <hr />
 
     <div class="blocks">
-      <!-- 1. Default bid first（与 Campaign Bid adjustment 中 Assuming a base bid 同源：adGroupBid） -->
-      <div class="bid-block">
+      <!-- 1. Targeting groups -->
+      <div class="bid-block" :class="{ 'bid-block--inactive': form.autoBidMode !== 'targeting_group' }">
         <div class="label-row">
-          <label>Set default bid</label>
+          <span
+            class="radio-dot"
+            :class="{ checked: form.autoBidMode === 'targeting_group' }"
+            @click="form.autoBidMode = 'targeting_group'"
+          >
+            <span v-if="form.autoBidMode === 'targeting_group'" class="radio-dot-inner" />
+          </span>
+          <label @click="form.autoBidMode = 'targeting_group'">Set bids by targeting group</label>
+          <div class="tooltip-wrap">
+            <img :src="iconHelpCircle" alt="" width="16" height="16" class="help-icon-trigger" />
+            <div class="tooltip-bubble">
+              Targeting groups use multiple strategies to match your ads to shoppers looking for your products.
+            </div>
+          </div>
+        </div>
+        <div v-if="form.autoBidMode === 'targeting_group'" class="at-table">
+          <!-- Header row -->
+          <div class="at-table-head">
+            <div class="at-head-cell at-head-cell--name">
+              <span class="at-head-label">Targeting groups</span>
+
+              <div class="tooltip-wrap">
+                <img :src="iconHelpCircle" alt="" width="14" height="14" class="help-icon-trigger" />
+                <div class="tooltip-bubble">
+                  Targeting groups use multiple strategies to match your ads to shoppers looking for your products.
+                </div>
+              </div>
+            </div>
+            <div class="at-head-cell at-head-cell--suggest">
+              <div class="at-suggest-select-wrap tooltip-wrap suggest-disabled-wrap">
+                <select v-model="suggestPeriod" class="at-suggest-select" disabled>
+                  <option v-for="o in suggestPeriodOptions" :key="o.value" :value="o.value">{{ o.label }}</option>
+                </select>
+                <svg class="at-select-chevron" width="12" height="12" viewBox="0 0 12 12" fill="none">
+                  <path d="M2 4l4 4 4-4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+                <div class="tooltip-bubble suggest-disabled-tooltip">
+                  No upcoming special events. Bids for special events will be available 45 days before the event.
+                </div>
+              </div>
+            </div>
+            <div class="at-head-cell at-head-cell--bid">
+              <span class="at-head-label">Bid</span>
+
+              <div class="tooltip-wrap">
+                <img :src="iconHelpCircle" alt="" width="14" height="14" class="help-icon-trigger" />
+                <div class="tooltip-bubble at-bid-tooltip">
+                  Enter the maximum amount you're willing to pay for a click.
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Data rows -->
+          <div class="at-table-body">
+            <div v-for="g in groups" :key="g.key" class="at-row">
+              <!-- Toggle -->
+              <button
+                class="toggle"
+                :class="{ on: form.autoGroups[g.key].enabled }"
+                type="button"
+                @click="form.autoGroups[g.key].enabled = !form.autoGroups[g.key].enabled"
+              >
+                <span class="knob"></span>
+              </button>
+
+              <!-- Name + tooltip -->
+              <div class="group-name-row">
+                <p class="group-name">{{ g.label }}</p>
+                <div class="tooltip-wrap group-tooltip-wrap">
+                  <img :src="iconHelpCircle" alt="" width="14" height="14" class="help-icon-trigger" />
+                  <div class="tooltip-bubble group-tooltip-bubble">{{ g.desc }}</div>
+                </div>
+              </div>
+
+              <!-- Suggested bid -->
+              <div class="at-suggest-cell">
+                <p class="at-suggest-price">{{ formatUsd(g.suggest[suggestPeriod].price) }}</p>
+                <p class="at-suggest-range">({{ formatUsd(g.suggest[suggestPeriod].low) }}–{{ formatUsd(g.suggest[suggestPeriod].high) }})</p>
+              </div>
+
+              <!-- Bid input -->
+              <div class="at-bid-cell">
+                <InlineNumberInput
+                  suffix="USD"
+                  :model-value="form.autoGroups[g.key].bid"
+                  @update:model-value="onBidInput(g.key, $event)"
+                  :step="0.01"
+                  size="lg"
+                  class="bid-input"
+                  :disabled="!form.autoGroups[g.key].enabled"
+                />
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 2. Default bid -->
+      <div class="bid-block" :class="{ 'bid-block--inactive': form.autoBidMode !== 'default_bid' }">
+        <div class="label-row">
+          <span
+            class="radio-dot"
+            :class="{ checked: form.autoBidMode === 'default_bid' }"
+            @click="form.autoBidMode = 'default_bid'"
+          >
+            <span v-if="form.autoBidMode === 'default_bid'" class="radio-dot-inner" />
+          </span>
+          <label @click="form.autoBidMode = 'default_bid'">Set default bid</label>
           <div class="tooltip-wrap">
             <img :src="iconHelpCircle" alt="" width="16" height="16" class="help-icon-trigger" />
             <div class="tooltip-bubble">
@@ -21,7 +129,7 @@
             </div>
           </div>
         </div>
-        <div class="default-bid-wrap">
+        <div v-if="form.autoBidMode === 'default_bid'" class="default-bid-wrap">
           <InlineNumberInput
             v-model="form.adGroupBid"
             :step="0.01"
@@ -31,57 +139,12 @@
           />
         </div>
       </div>
-
-      <!-- 2. Targeting groups：始终展开 -->
-      <div class="bid-block">
-        <div class="label-row">
-          <label>Set bids by targeting group</label>
-          <div class="tooltip-wrap">
-            <img :src="iconHelpCircle" alt="" width="16" height="16" class="help-icon-trigger" />
-            <div class="tooltip-bubble">
-              Targeting groups use multiple strategies to match your ads to shoppers looking for your products.
-            </div>
-          </div>
-        </div>
-        <div class="groups">
-          <div v-for="g in groups" :key="g.key" class="group-row">
-            <button
-              class="toggle"
-              :class="{ on: form.autoGroups[g.key].enabled }"
-              type="button"
-              @click="form.autoGroups[g.key].enabled = !form.autoGroups[g.key].enabled"
-            >
-              <span class="knob"></span>
-            </button>
-            <div class="group-fields">
-              <div class="group-name-row">
-                <p class="group-name">{{ g.label }}</p>
-                <div class="tooltip-wrap group-tooltip-wrap">
-                  <img :src="iconHelpCircle" alt="" width="14" height="14" class="help-icon-trigger" />
-                  <div class="tooltip-bubble group-tooltip-bubble">{{ g.desc }}</div>
-                </div>
-              </div>
-              <div v-if="form.autoGroups[g.key].enabled" class="bid-row">
-                <span class="bid-label">Bid</span>
-                <InlineNumberInput
-                  :model-value="form.autoGroups[g.key].bid"
-                  @update:model-value="onBidInput(g.key, $event)"
-                  :step="0.01"
-                  suffix="USD"
-                  size="lg"
-                  class="bid-input"
-                />
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
     </div>
   </section>
 </template>
 
 <script setup>
-import { reactive, watch } from 'vue'
+import { ref, reactive, watch } from 'vue'
 import { storeToRefs } from 'pinia'
 import { useCampaignStore } from '@/stores/campaign'
 import InlineNumberInput from '@/components/base/InlineNumberInput.vue'
@@ -89,27 +152,54 @@ import iconHelpCircle from '@/assets/icon-help-circle.svg'
 
 const { form } = storeToRefs(useCampaignStore())
 
+const suggestPeriod = ref('regular')
+const suggestPeriodOptions = [
+  { value: 'regular', label: 'Suggested bid for regular days' },
+  { value: 'peak',    label: 'Suggested bid for peak days' },
+]
+
+function formatUsd(v) {
+  if (v == null) return ''
+  return `$${Number(v).toFixed(2)}`
+}
+
 const groups = [
   {
     key: 'closeMatch',
     label: 'Close match',
-    desc: 'Shows ads to shoppers using search terms closely related to your products. Example: "running shoes" might match "athletic shoes".'
+    desc: 'Shows ads to shoppers using search terms closely related to your products. Example: "running shoes" might match "athletic shoes".',
+    suggest: {
+      regular: { price: 0.65, low: 0.44, high: 0.82 },
+      peak:    { price: 0.85, low: 0.60, high: 1.05 },
+    },
   },
   {
     key: 'looseMatch',
     label: 'Loose match',
-    desc: 'Shows ads to shoppers using search terms loosely related to your products. Example: "running shoes" might match "sports equipment".'
+    desc: 'Shows ads to shoppers using search terms loosely related to your products. Example: "running shoes" might match "sports equipment".',
+    suggest: {
+      regular: { price: 0.54, low: 0.35, high: 0.63 },
+      peak:    { price: 0.72, low: 0.48, high: 0.85 },
+    },
   },
   {
     key: 'substitutes',
     label: 'Substitutes',
-    desc: 'Shows ads to shoppers viewing similar products to yours. Example: Showing Nike running shoes to someone viewing Adidas running shoes.'
+    desc: 'Shows ads to shoppers viewing similar products to yours. Example: Showing Nike running shoes to someone viewing Adidas running shoes.',
+    suggest: {
+      regular: { price: 0.47, low: 0.25, high: 0.63 },
+      peak:    { price: 0.63, low: 0.35, high: 0.82 },
+    },
   },
   {
     key: 'complements',
     label: 'Complements',
-    desc: 'Shows ads to shoppers viewing products that pair well with yours. Example: Showing shoe insoles to someone viewing running shoes.'
-  }
+    desc: 'Shows ads to shoppers viewing products that pair well with yours. Example: Showing shoe insoles to someone viewing running shoes.',
+    suggest: {
+      regular: { price: 0.41, low: 0.25, high: 0.51 },
+      peak:    { price: 0.56, low: 0.33, high: 0.68 },
+    },
+  },
 ]
 
 const touched = reactive({
@@ -181,6 +271,33 @@ hr {
 }
 
 /* 与 Campaign Settings · Daily budget 一致：标题 + 问号 + 悬停说明 */
+.radio-dot {
+  flex-shrink: 0;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  border: 1.5px solid var(--border-strong);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: border-color 0.15s, background 0.15s;
+}
+.radio-dot.checked {
+  background: var(--primary);
+  border-color: var(--primary);
+}
+.radio-dot-inner {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #fff;
+}
+
+.bid-block--inactive .groups,
+.bid-block--inactive .default-bid-wrap { opacity: 0.5; }
+.bid-block--inactive .label-row { cursor: pointer; }
+
 .label-row {
   display: flex;
   align-items: center;
@@ -193,7 +310,7 @@ hr {
 
 .label-row label {
   margin: 0;
-  cursor: default;
+  cursor: pointer;
 }
 
 .help-icon-trigger {
@@ -251,17 +368,159 @@ hr {
   margin-top: 0;
 }
 
-.groups {
-  margin-top: 0;
-  display: flex;
-  flex-direction: column;
-  gap: 24px;
+/* ── Targeting groups table ── */
+.at-table {
+  margin-top: 12px;
+  padding-left: 22px;
 }
 
-.group-row {
+.at-table-head,
+.at-row {
+  display: grid;
+  grid-template-columns: 26px 160px 32px 300px 160px;
+  align-items: center;
+  justify-items: start;
+  column-gap: 4px;
+}
+
+.at-table-head {
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--border);
+  margin-bottom: 4px;
+}
+
+.at-head-cell {
   display: flex;
-  align-items: flex-start;
-  gap: 8px;
+  align-items: center;
+  gap: 6px;
+}
+
+.at-head-cell--name {
+  grid-column: 1 / 3;
+  width: fit-content;
+  justify-self: start;
+}
+
+.at-head-cell--suggest,
+.at-suggest-cell {
+  grid-column: 4;
+}
+
+.at-head-cell--bid,
+.at-bid-cell {
+  grid-column: 5;
+}
+
+.at-head-cell--bid {
+  justify-content: flex-start;
+}
+
+.at-head-label {
+  font-size: var(--text-md, 15px);
+  font-weight: 600;
+  color: var(--text-main);
+}
+
+.at-table-body {
+  display: flex;
+  flex-direction: column;
+}
+
+.at-row {
+  padding: 14px 0;
+  border-bottom: 1px solid var(--border);
+}
+
+.at-row:last-child {
+  border-bottom: none;
+}
+
+.at-suggest-cell {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.at-suggest-price {
+  margin: 0;
+  font-size: var(--text-base, 14px);
+  font-weight: 500;
+  color: var(--primary);
+}
+
+.at-suggest-range {
+  margin: 0;
+  font-size: var(--text-sm, 13px);
+  color: var(--text-hint);
+}
+
+.at-bid-cell {
+  width: 100%;
+}
+
+.at-bid-tooltip {
+  left: 50%;
+  right: auto;
+  top: calc(100% + 10px);
+  transform: translateX(-50%);
+}
+.at-bid-tooltip::before {
+  left: 50%;
+  top: -6px;
+  transform: translateX(-50%);
+  border-width: 0 6px 6px 6px;
+  border-color: transparent transparent #1c1f23 transparent;
+}
+
+.at-suggest-select-wrap {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+}
+.suggest-disabled-wrap {
+  cursor: not-allowed;
+}
+.suggest-disabled-tooltip {
+  left: 50%;
+  top: calc(100% + 10px);
+  transform: translateX(-50%);
+  width: 260px;
+  white-space: normal;
+  line-height: 1.5;
+}
+
+.suggest-disabled-tooltip::before {
+  left: 50%;
+  top: -6px;
+  transform: translateX(-50%);
+  border-width: 0 6px 6px 6px;
+  border-color: transparent transparent #1c1f23 transparent;
+}
+
+.at-suggest-select {
+  appearance: none;
+  height: 32px;
+  border: none;
+  padding: 0 20px 0 0;
+  font-size: var(--text-md, 15px);
+  font-weight: 600;
+  font-family: inherit;
+  color: var(--text-main);
+  background: transparent;
+  outline: none;
+  cursor: pointer;
+}
+.at-suggest-select:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
+.at-select-chevron {
+  position: absolute;
+  right: 0;
+  pointer-events: none;
+  color: #94a3b8;
 }
 
 .toggle {
@@ -274,7 +533,6 @@ hr {
   position: relative;
   cursor: pointer;
   transition: background 0.2s;
-  margin-top: 3px;
 }
 
 .toggle.on {
@@ -297,18 +555,11 @@ hr {
   left: 12px;
 }
 
-.group-fields {
-  flex: 1;
-  min-width: 0;
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-}
-
 .group-name-row {
   display: flex;
   align-items: center;
   gap: 5px;
+  width: fit-content;
 }
 
 .group-name {
@@ -330,24 +581,10 @@ hr {
 .group-tooltip-bubble::before {
   top: auto;
   bottom: -10px;
-  left: 10px;
-  transform: none;
+  left: 50%;
+  transform: translateX(-50%);
   border-width: 6px 6px 0 6px;
   border-color: #1c1f23 transparent transparent transparent;
 }
 
-.bid-row {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-}
-
-.bid-label {
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-  font-size: var(--text-base, 14px);
-  font-weight: 600;
-  color: var(--text-main);
-}
 </style>

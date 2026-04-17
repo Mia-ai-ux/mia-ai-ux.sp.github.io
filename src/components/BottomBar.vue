@@ -40,7 +40,7 @@ import UiButton from '@/components/ui/button/Button.vue'
 
 defineProps({
   nextLabel: { type: String, default: 'Next' },
-  backLabel: { type: String, default: 'Previous' },
+  backLabel: { type: String, default: 'Prev' },
   showBack:  { type: Boolean, default: false },
   loading:   { type: Boolean, default: false }
 })

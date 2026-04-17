@@ -14,20 +14,84 @@
 
             <div class="kt-right-head">
               <span class="added-title">{{ form.keywords.length }} added</span>
+              <button
+                v-if="form.keywords.length > 0"
+                type="button"
+                class="remove-all-text-btn"
+                @click="removeAllAdded"
+              >
+                Remove all
+              </button>
             </div>
 
             <div class="kt-left-stack">
               <div v-if="form.keywordTargetTab === 'amazon'" class="kt-toolbar">
                 <div class="toolbar-field match-types">
                   <span class="toolbar-label">Match type</span>
-                  <label class="chk"><input v-model="form.keywordTargetingMatchTypes.exact" type="checkbox" /> Exact</label>
-                  <label class="chk"><input v-model="form.keywordTargetingMatchTypes.broad" type="checkbox" /> Broad</label>
-                  <label class="chk"><input v-model="form.keywordTargetingMatchTypes.phrase" type="checkbox" /> Phrase</label>
+                  <label class="chk"><UiCheckbox v-model="form.keywordTargetingMatchTypes.exact" /> Exact</label>
+                  <label class="chk"><UiCheckbox v-model="form.keywordTargetingMatchTypes.phrase" /> Phrase</label>
+                  <label class="chk"><UiCheckbox v-model="form.keywordTargetingMatchTypes.broad" /> Broad</label>
+                </div>
+              </div>
+
+              <!-- Enter list toolbar -->
+              <div v-if="form.keywordTargetTab === 'enter'" class="kt-toolbar">
+                <div class="toolbar-field">
+                  <span class="toolbar-label">Custom Bid</span>
+                  <div class="enter-bid-wrap">
+                    <InlineNumberInput
+                      v-model="enterBid"
+                      :step="0.01"
+                      suffix="USD"
+                      size="default"
+                    />
+                  </div>
+                </div>
+                <div class="toolbar-field match-types">
+                  <span class="toolbar-label">Match type</span>
+                  <label class="chk"><UiCheckbox v-model="enterMatchTypes.exact" /> Exact</label>
+                  <label class="chk"><UiCheckbox v-model="enterMatchTypes.phrase" /> Phrase</label>
+                  <label class="chk"><UiCheckbox v-model="enterMatchTypes.broad" /> Broad</label>
+                </div>
+              </div>
+
+              <!-- Enter list panel -->
+              <div v-if="form.keywordTargetTab === 'enter'" class="kt-panel kt-panel--enter">
+                <textarea
+                  v-model="enterListText"
+                  class="enter-textarea"
+                  placeholder="Enter keyword separated by new line"
+                  rows="10"
+                />
+                <div class="enter-bottom-row">
+                  <div class="enter-upload-side">
+                    <input
+                      ref="enterFileInput"
+                      type="file"
+                      accept=".txt,.csv,.tsv,.xlsx,.xls,text/plain,text/csv,text/tab-separated-values,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel"
+                      class="enter-file-input-hidden"
+                      @change="onEnterListFile"
+                    />
+                    <div class="enter-file-actions">
+                      <button type="button" class="enter-upload-lite" @click="triggerEnterFilePick">
+                        Upload file
+                      </button>
+                      <button type="button" class="enter-download-template" @click="downloadEnterListTemplate">
+                        <Download class="enter-download-template__icon" :size="14" :stroke-width="2" aria-hidden="true" />
+                        Download the XLSX template
+                      </button>
+                    </div>
+                  </div>
+                  <div class="enter-actions">
+                    <UiButton type="button" size="sm" variant="default" @click="commitEnterList">
+                      Add keywords
+                    </UiButton>
+                  </div>
                 </div>
               </div>
 
               <!-- Amazon -->
-              <div v-if="form.keywordTargetTab === 'amazon'" class="kt-panel">
+              <div v-else-if="form.keywordTargetTab === 'amazon'" class="kt-panel">
                 <table class="data-table data-table--kw-stack">
                   <thead>
                     <tr>
@@ -136,6 +200,12 @@
                     </div>
                   </label>
                 </div>
+                <div class="campaigns-match-row toolbar-field match-types">
+                  <span class="toolbar-label">Match type</span>
+                  <label class="chk"><UiCheckbox v-model="form.keywordTargetingMatchTypes.exact" /> Exact</label>
+                  <label class="chk"><UiCheckbox v-model="form.keywordTargetingMatchTypes.phrase" /> Phrase</label>
+                  <label class="chk"><UiCheckbox v-model="form.keywordTargetingMatchTypes.broad" /> Broad</label>
+                </div>
                 <div v-if="!form.keywordSelectedCampaignId || !form.keywordSelectedAdGroupId" class="empty-block">
                   <div class="empty-illus" aria-hidden="true">
                     <svg width="64" height="64" viewBox="0 0 64 64" fill="none">
@@ -147,91 +217,107 @@
                   <p class="empty-text">请先选择 Campaign 和 Ad Group</p>
                   <p class="empty-hint">选择后将展示该广告组下的历史关键词</p>
                 </div>
-                <table v-else class="data-table flat">
-                  <thead>
-                    <tr>
-                      <th>Keyword</th>
-                      <th v-if="showCampaignSourceStatusColumn">Source status</th>
-                      <th>Match type</th>
-                      <th>Suggested bid</th>
-                      <th class="action-col">Action</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    <template v-if="campaignTableGroups.length === 0">
-                      <tr>
-                        <td :colspan="showCampaignSourceStatusColumn ? 5 : 4" class="kt-match-empty">
-                          No keywords to display for this ad group.
-                        </td>
-                      </tr>
-                    </template>
-                    <template v-else>
-                      <template v-for="group in campaignTableGroups" :key="group.base.id">
-                        <tr v-for="(line, lineIdx) in group.lines" :key="line.rowKey">
-                        <td
-                          v-if="lineIdx === 0"
-                          :rowspan="group.lines.length"
-                          class="kw-stack-td kw-stack-td--rowspan"
-                        >
-                          <p class="cell-title">{{ group.base.text }}</p>
-                          <p class="cell-meta cell-meta--isir">IS: {{ group.base.is }} | IR: {{ group.base.ir }}</p>
-                        </td>
-                        <td
-                          v-if="showCampaignSourceStatusColumn && lineIdx === 0"
-                          :rowspan="group.lines.length"
-                          class="muted kw-td-status"
-                        >
-                          {{ group.base.status }}
-                        </td>
-                        <td>{{ line.matchType }}</td>
-                        <td>
-                          <div class="sugg-main">{{ line.suggestBid }}</div>
-                          <div class="sugg-range">{{ line.suggestRange }}</div>
-                        </td>
-                        <td class="action-col">
-                          <button
-                            type="button"
-                            class="eb-exclude-btn"
-                            :disabled="isAdded(group.base.text, line.matchType)"
-                            :aria-label="isAdded(group.base.text, line.matchType) ? 'Already added' : 'Add keyword'"
-                            @click="
-                              addFromRow({
-                                text: group.base.text,
-                                is: group.base.is,
-                                ir: group.base.ir,
-                                matchType: line.matchType,
-                                suggestBid: line.suggestBid,
-                                suggestRange: line.suggestRange
-                              })
-                            "
-                          >
-                            {{ isAdded(group.base.text, line.matchType) ? 'Added' : 'Add' }}
-                          </button>
-                        </td>
+                <div v-else class="campaigns-table-stack">
+                  <div class="campaigns-table-scroll">
+                    <table class="data-table flat">
+                      <thead>
+                        <tr>
+                          <th class="narrow" aria-label="Select rows">
+                            <UiCheckbox
+                              v-if="campaignSelectableRowKeys.length"
+                              :model-value="campaignAllSelectableSelected"
+                              @update:model-value="onCampaignSelectAll"
+                            />
+                          </th>
+                          <th>Keyword</th>
+                          <th v-if="showCampaignSourceStatusColumn">Source status</th>
+                          <th>Match type</th>
+                          <th>Suggested bid</th>
+                          <th class="action-col">Action</th>
                         </tr>
-                      </template>
-                    </template>
-                  </tbody>
-                </table>
+                      </thead>
+                      <tbody>
+                        <template v-if="campaignTableGroups.length === 0">
+                          <tr>
+                            <td :colspan="showCampaignSourceStatusColumn ? 6 : 5" class="kt-match-empty">
+                              No keywords to display for this ad group.
+                            </td>
+                          </tr>
+                        </template>
+                        <template v-else>
+                          <template v-for="group in campaignTableGroups" :key="group.base.id">
+                            <tr v-for="(line, lineIdx) in group.lines" :key="line.rowKey">
+                              <td class="narrow">
+                                <UiCheckbox
+                                  :model-value="!!campaignSelected[line.rowKey]"
+                                  :disabled="isAdded(group.base.text, line.matchType)"
+                                  @update:model-value="
+                                    (checked) =>
+                                      toggleCampaignRow(
+                                        line.rowKey,
+                                        group.base.text,
+                                        line.matchType,
+                                        checked
+                                      )
+                                  "
+                                />
+                              </td>
+                              <td
+                                v-if="lineIdx === 0"
+                                :rowspan="group.lines.length"
+                                class="kw-stack-td kw-stack-td--rowspan"
+                              >
+                                <p class="cell-title">{{ group.base.text }}</p>
+                                <p class="cell-meta cell-meta--isir">IS: {{ group.base.is }} | IR: {{ group.base.ir }}</p>
+                              </td>
+                              <td
+                                v-if="showCampaignSourceStatusColumn && lineIdx === 0"
+                                :rowspan="group.lines.length"
+                                class="muted kw-td-status"
+                              >
+                                {{ group.base.status }}
+                              </td>
+                              <td>{{ line.matchType }}</td>
+                              <td>
+                                <div class="sugg-main">{{ line.suggestBid }}</div>
+                                <div class="sugg-range">{{ line.suggestRange }}</div>
+                              </td>
+                              <td class="action-col">
+                                <button
+                                  type="button"
+                                  class="eb-exclude-btn"
+                                  :disabled="isAdded(group.base.text, line.matchType)"
+                                  :aria-label="isAdded(group.base.text, line.matchType) ? 'Already added' : 'Add keyword'"
+                                  @click="
+                                    addFromRow({
+                                      text: group.base.text,
+                                      is: group.base.is,
+                                      ir: group.base.ir,
+                                      matchType: line.matchType,
+                                      suggestBid: line.suggestBid,
+                                      suggestRange: line.suggestRange
+                                    })
+                                  "
+                                >
+                                  {{ isAdded(group.base.text, line.matchType) ? 'Added' : 'Add' }}
+                                </button>
+                              </td>
+                            </tr>
+                          </template>
+                        </template>
+                      </tbody>
+                    </table>
+                  </div>
+                  <div v-if="campaignSelectedCount > 0" class="campaigns-bulk-actions">
+                    <UiButton type="button" size="sm" variant="default" @click="addSelectedCampaignRows">
+                      Add selected
+                    </UiButton>
+                  </div>
+                </div>
               </div>
             </div>
 
             <div class="kt-right-stack">
-              <div class="kt-added-toolbar">
-                <button type="button" class="add-keyword-lite-btn" @click="addManualKeywordRow">
-                  <span class="add-keyword-lite-btn__plus" aria-hidden="true">+</span>
-                  Add keyword
-                </button>
-                <button
-                  v-if="form.keywords.length > 0"
-                  type="button"
-                  class="remove-all-text-btn"
-                  @click="removeAllAdded"
-                >
-                  Remove all
-                </button>
-              </div>
-
               <div v-if="form.keywords.length === 0" class="empty-block tight">
                 <div class="empty-illus" aria-hidden="true">
                   <svg width="56" height="56" viewBox="0 0 56 56" fill="none">
@@ -241,7 +327,7 @@
                   </svg>
                 </div>
                 <p class="empty-text">尚未添加关键词</p>
-                <p class="empty-hint">从左侧添加，或点击上方 + Add keyword 手动输入</p>
+                <p class="empty-hint">从左侧添加关键词</p>
               </div>
 
               <div v-else class="added-table-wrap">
@@ -343,7 +429,7 @@
 </template>
 
 <script setup>
-import { computed, nextTick, onMounted, watch } from 'vue'
+import { computed, onMounted, ref, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import { storeToRefs } from 'pinia'
 import { useCampaignStore } from '@/stores/campaign'
@@ -351,8 +437,13 @@ import Stepper from '@/components/Stepper.vue'
 import BottomBar from '@/components/BottomBar.vue'
 import UnderlineTabs from '@/components/ui/UnderlineTabs.vue'
 import UiSelect from '@/components/ui/select/Select.vue'
+import InlineNumberInput from '@/components/base/InlineNumberInput.vue'
+import UiButton from '@/components/ui/button/Button.vue'
+import UiCheckbox from '@/components/ui/checkbox/Checkbox.vue'
 import iconHelpCircle from '@/assets/icon-help-circle.svg'
 import { useFlowSteps } from '@/composables/useFlowSteps'
+import * as XLSX from 'xlsx'
+import { Download } from 'lucide-vue-next'
 
 const router = useRouter()
 const campaignStore = useCampaignStore()
@@ -368,6 +459,7 @@ onMounted(() => {
 })
 
 const tabs = [
+  { id: 'enter', label: 'Enter list' },
   { id: 'campaigns', label: 'Select from campaigns' },
   { id: 'amazon', label: 'Amazon Suggested' }
 ]
@@ -381,8 +473,8 @@ const keywordAddedMatchTypeOptions = [
 /** Campaigns 表「Source status」列：暂隐藏，改 true 可恢复 */
 const showCampaignSourceStatusColumn = false
 
-/** 表格行顺序与参考稿一致：Broad → Phrase → Exact */
-const DISPLAY_MATCH_ORDER = ['Broad', 'Phrase', 'Exact']
+/** 表格行顺序：Phrase → Broad → Exact（与 Match type 勾选从左到右一致） */
+const DISPLAY_MATCH_ORDER = ['Phrase', 'Broad', 'Exact']
 
 const amazonSuggestedRows = [
   {
@@ -515,7 +607,7 @@ function matchTypesFromToolbar() {
   })
 }
 
-/** Select from campaigns：按每条关键词数据里出现的 match type 列行，顺序固定 Broad → Phrase → Exact */
+/** 按 suggestByMatch 里存在的类型过滤，行顺序同 DISPLAY_MATCH_ORDER */
 function matchTypesFromSuggest(suggestByMatch) {
   if (!suggestByMatch || typeof suggestByMatch !== 'object') return []
   return DISPLAY_MATCH_ORDER.filter((name) => suggestByMatch[name] != null)
@@ -539,9 +631,12 @@ const amazonTableGroups = computed(() => {
 })
 
 const campaignTableGroups = computed(() => {
+  const toolbarTypes = matchTypesFromToolbar()
+  if (!toolbarTypes.length) return []
   return campaignKeywordRows.value
     .map((base) => {
-      const types = matchTypesFromSuggest(base.suggestByMatch)
+      const fromData = matchTypesFromSuggest(base.suggestByMatch)
+      const types = fromData.filter((mt) => toolbarTypes.includes(mt))
       return {
         base,
         lines: types.map((mt) => {
@@ -592,32 +687,337 @@ function addFromRow(row) {
   })
 }
 
+/** Campaigns 表：按行多选（rowKey = baseId-matchType） */
+const campaignSelected = ref({})
+
+const campaignSelectableRowKeys = computed(() => {
+  const keys = []
+  for (const g of campaignTableGroups.value) {
+    for (const line of g.lines) {
+      if (!isAdded(g.base.text, line.matchType)) keys.push(line.rowKey)
+    }
+  }
+  return keys
+})
+
+const campaignSelectedCount = computed(() =>
+  Object.keys(campaignSelected.value).filter((k) => campaignSelected.value[k]).length
+)
+
+const campaignAllSelectableSelected = computed(() => {
+  const sel = campaignSelectableRowKeys.value
+  if (!sel.length) return false
+  return sel.every((k) => campaignSelected.value[k])
+})
+
+function clearCampaignRowSelection() {
+  campaignSelected.value = {}
+}
+
+function toggleCampaignRow(rowKey, text, matchType, checked) {
+  if (isAdded(text, matchType)) return
+  const next = { ...campaignSelected.value }
+  if (checked) next[rowKey] = true
+  else delete next[rowKey]
+  campaignSelected.value = next
+}
+
+function onCampaignSelectAll(checked) {
+  if (checked) {
+    const next = { ...campaignSelected.value }
+    for (const k of campaignSelectableRowKeys.value) next[k] = true
+    campaignSelected.value = next
+  } else {
+    campaignSelected.value = {}
+  }
+}
+
+function addSelectedCampaignRows() {
+  for (const g of campaignTableGroups.value) {
+    for (const line of g.lines) {
+      if (!campaignSelected.value[line.rowKey]) continue
+      if (isAdded(g.base.text, line.matchType)) continue
+      addFromRow({
+        text: g.base.text,
+        is: g.base.is,
+        ir: g.base.ir,
+        matchType: line.matchType,
+        suggestBid: line.suggestBid,
+        suggestRange: line.suggestRange
+      })
+    }
+  }
+  clearCampaignRowSelection()
+}
+
+watch(
+  () => [
+    form.value.keywordSelectedCampaignId,
+    form.value.keywordSelectedAdGroupId,
+    form.value.keywordTargetingMatchTypes.exact,
+    form.value.keywordTargetingMatchTypes.phrase,
+    form.value.keywordTargetingMatchTypes.broad,
+  ],
+  () => clearCampaignRowSelection()
+)
+
+watch(
+  () => form.value.keywordTargetTab,
+  (tab) => {
+    if (tab !== 'campaigns') clearCampaignRowSelection()
+  }
+)
+
+/* ── Enter list ── */
+const enterListText = ref('')
+const enterFileInput = ref(null)
+const enterBid = ref(form.value.keywordTargetingDefaultBid ?? 0.75)
+const enterMatchTypes = ref({ exact: true, broad: false, phrase: false })
+
+function triggerEnterFilePick() {
+  enterFileInput.value?.click()
+}
+
+function downloadEnterListTemplate() {
+  const ws = XLSX.utils.aoa_to_sheet([
+    ['Keyword', 'Match type', 'Suggested bid'],
+    ['humidifier for bedroom', 'Phrase', '1.00'],
+  ])
+  const wb = XLSX.utils.book_new()
+  XLSX.utils.book_append_sheet(wb, ws, 'Keywords')
+  XLSX.writeFile(wb, 'keyword-import-template.xlsx')
+}
+
+function normalizeUploadText(raw) {
+  return raw.replace(/^\uFEFF/, '').replace(/\r\n/g, '\n').replace(/\r/g, '\n')
+}
+
+/** 工作表首行起：列 0=关键词原文，1=Match type，2=Suggested bid（单元格不做 trim，仅去行尾 \\r） */
+function workbookRowsRaw(wb) {
+  const sn = wb.SheetNames[0]
+  if (!sn) return []
+  const ws = wb.Sheets[sn]
+  const rows = XLSX.utils.sheet_to_json(ws, { header: 1, defval: '' })
+  return rows
+    .map((r) => {
+      const arr = Array.isArray(r) ? r : []
+      return {
+        c0: String(arr[0] ?? '').replace(/\r$/, ''),
+        c1: String(arr[1] ?? '').replace(/\r$/, ''),
+        c2: String(arr[2] ?? '').replace(/\r$/, ''),
+      }
+    })
+    .filter((row) => row.c0.length > 0)
+}
+
+function rowHasExtraColumns(row) {
+  return row.c1.trim() !== '' || row.c2.trim() !== ''
+}
+
+function isLikelyKeywordHeaderRow(row) {
+  const a = row.c0.trim().toLowerCase()
+  const b = row.c1.trim().toLowerCase()
+  const c = row.c2.trim().toLowerCase()
+  if (a === 'keyword' || a === 'keywords') return true
+  if (a.includes('keyword') && (b.includes('match') || c.includes('suggest') || c.includes('bid')))
+    return true
+  return false
+}
+
+function stripHeaderRow(rows) {
+  if (!rows.length || !isLikelyKeywordHeaderRow(rows[0])) return rows
+  return rows.slice(1)
+}
+
+/** 纯文本 / 无表头的 TSV：无 \\t 则整行为关键词；有 \\t 则前三列为 c0/c1/c2 */
+function parseTextLinesToKeywordRows(text) {
+  const norm = normalizeUploadText(text)
+  const lines = norm.split('\n').map((l) => l.replace(/\r$/, ''))
+  const rows = []
+  for (const line of lines) {
+    if (line === '') continue
+    if (!line.includes('\t')) {
+      rows.push({ c0: line, c1: '', c2: '' })
+    } else {
+      const p = line.split('\t')
+      rows.push({
+        c0: p[0] ?? '',
+        c1: p[1] ?? '',
+        c2: p[2] ?? '',
+      })
+    }
+  }
+  return rows
+}
+
+function normalizeMatchTypeCell(raw) {
+  const s = String(raw ?? '').trim().toUpperCase()
+  if (s === 'EXACT' || s === 'E') return 'Exact'
+  if (s === 'PHRASE' || s === 'P') return 'Phrase'
+  if (s === 'BROAD' || s === 'B') return 'Broad'
+  return null
+}
+
+function parseSuggestedBidCell(raw) {
+  const s = String(raw ?? '').trim()
+  if (!s) return { suggestBid: '—', suggestRange: '—', bidNum: null }
+  const n = parseFloat(s.replace(/[$,\s]/g, ''))
+  if (Number.isFinite(n) && n >= 0) {
+    return { suggestBid: `$${n.toFixed(2)}`, suggestRange: '—', bidNum: n }
+  }
+  return { suggestBid: s, suggestRange: '—', bidNum: null }
+}
+
+/** 上传：支持三列（Keyword / Match type / Suggested bid）；仅首列有内容时与旧版一致 */
+function processKeywordUploadRows(rows) {
+  const rowsUse = stripHeaderRow(rows)
+  if (!rowsUse.length) return
+
+  const multi = rowsUse.some(rowHasExtraColumns)
+  if (!multi) {
+    const joined = rowsUse.map((r) => r.c0).join('\n')
+    if (joined.trim()) addEnterListLines(joined, { fromUpload: true })
+    return
+  }
+
+  const fallbackTypes = [
+    enterMatchTypes.value.exact && 'Exact',
+    enterMatchTypes.value.phrase && 'Phrase',
+    enterMatchTypes.value.broad && 'Broad',
+  ].filter(Boolean)
+  if (!fallbackTypes.length) return
+
+  const defaultBid = enterBid.value || form.value.keywordTargetingDefaultBid
+
+  for (const row of rowsUse) {
+    if (!row.c0.length) continue
+    const mtCell = normalizeMatchTypeCell(row.c1)
+    const matchList = mtCell ? [mtCell] : fallbackTypes
+    const sug = parseSuggestedBidCell(row.c2)
+    const bidVal = sug.bidNum != null ? sug.bidNum : defaultBid
+
+    for (const matchType of matchList) {
+      const already = form.value.keywords.some(
+        (k) => k.text === row.c0 && k.matchType === matchType
+      )
+      if (already) continue
+      const id = `kw-enter-${Date.now()}-${Math.random().toString(36).slice(2, 9)}`
+      form.value.keywords.push({
+        id,
+        text: row.c0,
+        subtitle: '',
+        matchType,
+        is: '—',
+        ir: '—',
+        suggestBid: sug.suggestBid,
+        suggestRange: sug.suggestRange,
+        bid: bidVal,
+      })
+    }
+  }
+}
+
+async function onEnterListFile(ev) {
+  const input = ev.target
+  const file = input.files?.[0]
+  if (!file) return
+  const lower = file.name.toLowerCase()
+  const type = file.type || ''
+  try {
+    const isXlsx =
+      lower.endsWith('.xlsx') ||
+      type === 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+    const isXls = lower.endsWith('.xls') || type === 'application/vnd.ms-excel'
+    const isCsv = lower.endsWith('.csv') || type === 'text/csv'
+    const isTsv = lower.endsWith('.tsv') || type === 'text/tab-separated-values'
+
+    if (isXlsx || isXls) {
+      const buf = await file.arrayBuffer()
+      const wb = XLSX.read(buf, { type: 'array' })
+      processKeywordUploadRows(workbookRowsRaw(wb))
+    } else if (isCsv) {
+      const text = normalizeUploadText(await file.text())
+      const wb = XLSX.read(text, { type: 'string' })
+      processKeywordUploadRows(workbookRowsRaw(wb))
+    } else if (isTsv) {
+      const text = normalizeUploadText(await file.text())
+      const rows = text
+        .split('\n')
+        .map((line) => {
+          const l = line.replace(/\r$/, '')
+          if (l === '') return null
+          const p = l.split('\t')
+          return {
+            c0: p[0] ?? '',
+            c1: p[1] ?? '',
+            c2: p[2] ?? '',
+          }
+        })
+        .filter(Boolean)
+        .filter((row) => row.c0.length > 0)
+      processKeywordUploadRows(rows)
+    } else {
+      const out = normalizeUploadText(await file.text())
+      if (out.trim()) processKeywordUploadRows(parseTextLinesToKeywordRows(out))
+    }
+  } catch {
+    /* ignore read / parse errors */
+  }
+  input.value = ''
+}
+
+/** 按当前 Custom Bid / Match type 将多行文本加入右侧列表（与「Add keywords」一致） */
+function addEnterListLines(sourceText, { fromUpload = false } = {}) {
+  const bid = enterBid.value || form.value.keywordTargetingDefaultBid
+  const selectedTypes = [
+    enterMatchTypes.value.exact  && 'Exact',
+    enterMatchTypes.value.phrase && 'Phrase',
+    enterMatchTypes.value.broad  && 'Broad',
+  ].filter(Boolean)
+
+  if (!selectedTypes.length) return
+
+  const lines = fromUpload
+    ? normalizeUploadText(sourceText)
+        .split('\n')
+        .map((l) => l.replace(/\r$/, ''))
+        .filter((l) => l !== '')
+    : sourceText.split('\n').map((l) => l.trim()).filter(Boolean)
+  lines.forEach((line) => {
+    selectedTypes.forEach((matchType) => {
+      const alreadyAdded = fromUpload
+        ? form.value.keywords.some((k) => k.text === line && k.matchType === matchType)
+        : form.value.keywords.some(
+            (k) => k.text.toLowerCase() === line.toLowerCase() && k.matchType === matchType
+          )
+      if (alreadyAdded) return
+      const id = `kw-enter-${Date.now()}-${Math.random().toString(36).slice(2, 9)}`
+      form.value.keywords.push({
+        id,
+        text: line,
+        subtitle: '',
+        matchType,
+        is: '—',
+        ir: '—',
+        suggestBid: '—',
+        suggestRange: '—',
+        bid,
+      })
+    })
+  })
+}
+
+function commitEnterList() {
+  addEnterListLines(enterListText.value, { fromUpload: false })
+  enterListText.value = ''
+}
+
 function removeAdded(id) {
   form.value.keywords = form.value.keywords.filter(k => k.id !== id)
 }
 
 function removeAllAdded() {
   form.value.keywords = []
-}
-
-function addManualKeywordRow() {
-  const def = form.value.keywordTargetingDefaultBid
-  const id = `kw-${Date.now()}-${Math.random().toString(36).slice(2, 9)}`
-  form.value.keywords.push({
-    id,
-    text: '',
-    subtitle: '',
-    matchType: 'Exact',
-    is: '—',
-    ir: '—',
-    suggestBid: '—',
-    suggestRange: '—',
-    bid: def,
-    manual: true
-  })
-  nextTick(() => {
-    document.getElementById(`added-kw-${id}`)?.focus()
-  })
 }
 
 function onCancel() { router.push('/') }
@@ -733,7 +1133,7 @@ function onNext() { router.push(getNextPath('/keyword-targeting')) }
   opacity: 0.8;
 }
 
-/* 与 .kt-added-toolbar 同高：固定最小高度 + border-box，表格表头左右对齐 */
+/* 固定最小高度 + border-box，与右侧表格区域竖向节奏对齐 */
 .kt-toolbar {
   display: flex;
   flex-wrap: wrap;
@@ -755,6 +1155,11 @@ function onNext() { router.push(getNextPath('/keyword-targeting')) }
   font-size: 13px;
   color: var(--text-sub);
   white-space: nowrap;
+}
+
+.enter-bid-wrap {
+  max-width: 220px;
+  width: 100%;
 }
 
 .bid-input-wrap {
@@ -806,11 +1211,168 @@ function onNext() { router.push(getNextPath('/keyword-targeting')) }
   padding-top: 18px;
 }
 
+.kt-panel--enter {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.enter-bottom-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+  width: 100%;
+}
+
+.enter-upload-side {
+  position: relative;
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+}
+
+.enter-file-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+}
+
+.enter-file-input-hidden {
+  position: absolute;
+  width: 0;
+  height: 0;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.enter-upload-lite {
+  margin: 0;
+  padding: 6px 10px;
+  border: 1px dashed #c4c9d4;
+  border-radius: 3px;
+  background: var(--gray-50, #f8fafc);
+  color: var(--text-sub, #6b7280);
+  font-size: 12px;
+  font-weight: 500;
+  font-family: inherit;
+  line-height: 1.3;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: border-color 0.15s, color 0.15s, background 0.15s;
+}
+
+.enter-upload-lite:hover {
+  border-color: var(--primary, #1d4ed8);
+  color: var(--primary, #1d4ed8);
+  background: #fff;
+}
+
+.enter-download-template {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin: 0;
+  padding: 4px 2px;
+  border: none;
+  border-radius: 3px;
+  background: transparent;
+  color: var(--text-main, #374151);
+  font-size: 12px;
+  font-weight: 500;
+  font-family: inherit;
+  line-height: 1.3;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: color 0.15s, opacity 0.15s;
+}
+
+.enter-download-template:hover {
+  color: var(--primary, #1d4ed8);
+}
+
+.enter-download-template:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.35);
+}
+
+.enter-download-template__icon {
+  flex-shrink: 0;
+  color: inherit;
+}
+
+.enter-hint {
+  margin: 0;
+  font-size: var(--text-sm, 13px);
+  color: var(--text-sub, #6b7280);
+  line-height: 1.6;
+}
+
+.enter-textarea {
+  width: 100%;
+  box-sizing: border-box;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  padding: 10px 12px;
+  font-family: inherit;
+  font-size: var(--text-base, 14px);
+  color: #111;
+  resize: vertical;
+  outline: none;
+  line-height: 1.6;
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+.enter-textarea:focus {
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 3px rgba(59,130,246,.15);
+}
+.enter-textarea::placeholder {
+  color: #9ca3af;
+}
+.enter-actions {
+  display: flex;
+  justify-content: flex-end;
+  flex-shrink: 0;
+}
 .filters-row {
   display: flex;
   flex-wrap: wrap;
   gap: 16px;
+  margin-bottom: 0;
+}
+
+.campaigns-match-row {
+  flex-wrap: wrap;
+  margin-top: 20px;
   margin-bottom: 18px;
+}
+
+.campaigns-table-stack {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  min-height: 0;
+}
+
+.campaigns-table-scroll {
+  overflow: auto;
+  width: 100%;
+}
+
+.campaigns-bulk-actions {
+  display: flex;
+  justify-content: flex-end;
+  padding-top: 12px;
+  flex-shrink: 0;
+}
+
+.campaigns-table-stack .narrow {
+  width: 40px;
+  text-align: center;
+  vertical-align: middle;
 }
 
 .filter-field {
@@ -1062,47 +1624,11 @@ function onNext() { router.push(getNextPath('/keyword-targeting')) }
   align-self: stretch;
   display: flex;
   align-items: center;
+  justify-content: space-between;
+  gap: 12px;
   padding: 12px 20px;
   border-bottom: 1px solid var(--border);
   box-sizing: border-box;
-}
-
-.kt-added-toolbar {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-  box-sizing: border-box;
-  flex-shrink: 0;
-  min-height: 64px;
-  padding: 18px 20px;
-}
-
-.add-keyword-lite-btn {
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-  margin: 0;
-  padding: 0;
-  border: none;
-  background: none;
-  font-family: inherit;
-  font-size: 14px;
-  font-weight: 500;
-  line-height: 1.25;
-  color: #1876ff;
-  cursor: pointer;
-  transition: opacity 0.15s;
-}
-
-.add-keyword-lite-btn:hover {
-  opacity: 0.75;
-}
-
-.add-keyword-lite-btn__plus {
-  font-size: 15px;
-  font-weight: 500;
-  line-height: 1;
 }
 
 .remove-all-text-btn {
@@ -1211,6 +1737,7 @@ function onNext() { router.push(getNextPath('/keyword-targeting')) }
 }
 
 .added-title {
+  flex-shrink: 0;
   font-size: 16px;
   font-weight: 600;
   color: var(--text-main);
@@ -1248,11 +1775,11 @@ function onNext() { router.push(getNextPath('/keyword-targeting')) }
   line-height: 1.5;
 }
 
-/* 与左侧 .kt-panel 一致：左右 20px、底 14px */
+/* 与左侧 .kt-panel 一致：左右 20px、底 14px；顶 18px 与左侧工具栏下缘节奏对齐 */
 .added-table-wrap {
   flex: 1;
   overflow: auto;
-  padding: 0 20px 14px;
+  padding: 18px 20px 14px;
   box-sizing: border-box;
 }
 

@@ -34,49 +34,6 @@
       <div v-if="form.bidMode" class="detail-panel">
         <div class="bid-adjustment-header-row">
           <h2>Bid adjustment</h2>
-          <div class="placement-assumption-row placement-assumption-under-title">
-          <template v-if="!editingBaseBid">
-            <span class="placement-assumption-muted">Assuming a base bid of </span>
-            <span class="placement-assumption-amount">{{ formatUsd(displayBaseBid) }}</span>
-            <button
-              type="button"
-              class="placement-edit-bid"
-              aria-label="Edit base bid"
-              @click="startEditBaseBid"
-            >
-              <svg
-                class="placement-pencil-icon"
-                xmlns="http://www.w3.org/2000/svg"
-                width="16"
-                height="16"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="2"
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                aria-hidden="true"
-              >
-                <path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z" />
-                <path d="m15 5 4 4" />
-              </svg>
-            </button>
-          </template>
-          <template v-else>
-            <span class="placement-assumption-muted">Assuming a base bid of </span>
-            <input
-              ref="baseBidInputRef"
-              v-model.number="baseBidDraft"
-              class="placement-base-bid-input"
-              type="number"
-              step="0.01"
-              min="0.01"
-              @blur="commitBaseBid"
-              @keydown.enter.prevent="commitBaseBid"
-              @keydown.escape.prevent="cancelEditBaseBid"
-            />
-          </template>
-          </div>
         </div>
         <!-- Placements（始终展开） -->
         <div class="sub-section">
@@ -90,9 +47,6 @@
                 <div class="placement-input-wrap">
                   <InlineNumberInput v-model="form[p.key]" suffix="%" size="lg" />
                 </div>
-                <span v-if="placementBidHint(p.key)" class="placement-effective">
-                  {{ placementBidHint(p.key) }}
-                </span>
               </div>
             </div>
           </div>
@@ -146,6 +100,8 @@
                     size="lg"
                     placeholder="Choose an audience"
                     :options="currentAudienceOptions"
+                    searchable
+                    search-placeholder="Search audiences…"
                   />
                 </div>
                 <div class="audience-pct-wrap">
@@ -514,22 +470,24 @@ h2 {
   height: 16px;
   margin-top: 2px;
   border-radius: 50%;
-  border: 2px solid var(--border-strong, #b0b8c8);
+  border: 1.5px solid var(--border-strong);
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: border-color 0.15s;
+  cursor: pointer;
+  transition: border-color 0.15s, background 0.15s;
 }
 
 .radio-dot.checked {
+  background: var(--primary);
   border-color: var(--primary);
 }
 
 .radio-dot-inner {
-  width: 7px;
-  height: 7px;
+  width: 6px;
+  height: 6px;
   border-radius: 50%;
-  background: var(--primary);
+  background: #fff;
 }
 
 /* Audience config panel */

@@ -8,177 +8,6 @@
 
         <main class="main-content">
 
-          <!-- ═══════════════ Categories Module ═══════════════ -->
-          <section class="pt-module">
-            <div class="pt-module-head">
-              <h3 class="pt-module-title">Categories</h3>
-            </div>
-
-            <div class="pt-shell">
-              <!-- Row 1: tabs | right head -->
-              <div class="pt-tabs-row">
-                <UnderlineTabs v-model="form.productCategoryTab" :items="categorySubTabs" size="lg" />
-              </div>
-              <div class="pt-right-head">
-                <span class="added-title">{{ categoryTargets.length }} added</span>
-                <button
-                  v-if="categoryTargets.length > 0"
-                  type="button"
-                  class="link-btn"
-                  @click="removeAllCategories"
-                >
-                  Remove all
-                </button>
-              </div>
-
-              <!-- Row 2: left content | right content -->
-              <div class="pt-left-stack">
-                <!-- ── Categories: suggested ── -->
-                <div v-if="form.productCategoryTab === 'suggested'" class="pt-panel">
-                  <table class="data-table">
-                    <thead>
-                      <tr>
-                        <th>Category</th>
-                        <th>Suggested bid</th>
-                        <th class="action-col" aria-label="Action"></th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      <tr v-for="row in suggestedCategories" :key="row.id">
-                        <td>
-                          <p class="cell-title">{{ row.path }}</p>
-                        </td>
-                        <td>
-                          <span class="sugg-main">{{ row.suggestBid }}</span>
-                          <div v-if="row.suggestRange" class="sugg-range">{{ row.suggestRange }}</div>
-                        </td>
-                        <td class="action-col">
-                          <button type="button" class="text-add-btn" aria-label="Add category" @click="addCategory(row)">Add</button>
-                        </td>
-                      </tr>
-                    </tbody>
-                  </table>
-                </div>
-
-                <!-- ── Categories: campaigns ── -->
-                <div v-else-if="form.productCategoryTab === 'campaigns'" class="pt-panel pt-panel--campaigns">
-                  <div class="filters-row">
-                    <label class="filter-field">
-                      <span class="toolbar-label">Campaign</span>
-                      <div class="filter-ui-select">
-                        <UiSelect
-                          v-model="form.productSelectedCampaignId"
-                          placeholder="Select campaign"
-                          :options="ptCampaignSelectOptions"
-                        />
-                      </div>
-                    </label>
-                    <label class="filter-field">
-                      <span class="toolbar-label">Ad group</span>
-                      <div class="filter-ui-select">
-                        <UiSelect
-                          v-model="form.productSelectedAdGroupId"
-                          placeholder="Select ad group"
-                          :options="ptAdGroupSelectOptions"
-                          :disabled="!form.productSelectedCampaignId"
-                        />
-                      </div>
-                    </label>
-                  </div>
-                  <template v-if="!form.productSelectedCampaignId || !form.productSelectedAdGroupId">
-                    <div class="empty-block">
-                      <div class="empty-illus" aria-hidden="true">
-                        <svg width="64" height="64" viewBox="0 0 64 64" fill="none">
-                          <rect x="8" y="14" width="48" height="36" rx="4" stroke="var(--gray-300,#d0d7e2)" stroke-width="1.5" fill="var(--gray-50,#f8fafc)"/>
-                          <path d="M20 32h24M20 40h16" stroke="var(--gray-300,#d0d7e2)" stroke-width="1.5" stroke-linecap="round"/>
-                          <circle cx="32" cy="24" r="4" stroke="var(--gray-300,#d0d7e2)" stroke-width="1.5"/>
-                        </svg>
-                      </div>
-                      <p class="empty-text">请先选择 Campaign 和 Ad Group</p>
-                      <p class="empty-hint">选择后将展示该广告组下的历史分类</p>
-                    </div>
-                  </template>
-                  <template v-else>
-                    <table class="data-table">
-                      <thead>
-                        <tr>
-                          <th>Category</th>
-                          <th>Source group status</th>
-                          <th>Status</th>
-                          <th>Suggested bid</th>
-                          <th class="action-col" aria-label="Action"></th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        <tr v-for="row in campaignCategoryRows" :key="row.id">
-                          <td><p class="cell-title">{{ row.path }}</p></td>
-                          <td class="muted">{{ row.sourceStatus }}</td>
-                          <td class="muted">{{ row.status }}</td>
-                          <td>
-                            <span class="sugg-main">{{ row.suggestBid }}</span>
-                            <div v-if="row.suggestRange" class="sugg-range">{{ row.suggestRange }}</div>
-                          </td>
-                          <td class="action-col">
-                            <button type="button" class="text-add-btn" aria-label="Add category" @click="addCategory(row)">Add</button>
-                          </td>
-                        </tr>
-                      </tbody>
-                    </table>
-                  </template>
-                </div>
-              </div>
-
-              <div class="pt-right-stack">
-                <div v-if="categoryTargets.length === 0" class="empty-block tight">
-                  <div class="empty-illus" aria-hidden="true">
-                    <svg width="56" height="56" viewBox="0 0 56 56" fill="none">
-                      <rect x="6" y="10" width="44" height="32" rx="4" stroke="var(--gray-300,#d0d7e2)" stroke-width="1.5" fill="var(--gray-50,#f8fafc)"/>
-                      <path d="M14 26h28M14 33h18" stroke="var(--gray-300,#d0d7e2)" stroke-width="1.5" stroke-linecap="round"/>
-                      <path d="M36 38l6 6M42 38l-6 6" stroke="var(--primary,#1876ff)" stroke-width="1.5" stroke-linecap="round" opacity="0.6"/>
-                    </svg>
-                  </div>
-                  <p class="empty-text">尚未添加分类</p>
-                  <p class="empty-hint">从左侧选择并添加</p>
-                </div>
-
-                <div v-else class="added-table-wrap">
-                  <table class="data-table added-table">
-                    <thead>
-                      <tr>
-                        <th>Category</th>
-                        <th>Bid</th>
-                        <th class="action-col" aria-label="Action"></th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      <tr v-for="row in categoryTargets" :key="row.id">
-                        <td>
-                          <p class="cell-title">{{ row.title }}</p>
-                        </td>
-                        <td>
-                          <span class="bid-input-wrap bid-input-wrap--minimal">
-                            <span class="currency">$</span>
-                            <input
-                              v-model.number="row.bid"
-                              class="bid-input"
-                              type="number"
-                              step="0.01"
-                              min="0"
-                              :placeholder="Number(form.productTargetingDefaultBid).toFixed(2)"
-                            />
-                          </span>
-                        </td>
-                        <td class="action-col">
-                          <button type="button" class="icon-remove" aria-label="Remove" @click="removeAdded(row.id)">×</button>
-                        </td>
-                      </tr>
-                    </tbody>
-                  </table>
-                </div>
-              </div>
-            </div>
-          </section>
-
           <!-- ═══════════════ Products Module ═══════════════ -->
           <section class="pt-module">
             <div class="pt-module-head">
@@ -192,27 +21,88 @@
               </div>
               <div class="pt-right-head">
                 <span class="added-title">{{ productOnlyTargets.length }} added</span>
+                <button
+                  v-if="productOnlyTargets.length > 0"
+                  type="button"
+                  class="link-btn"
+                  @click="removeAllProducts"
+                >
+                  Remove all
+                </button>
               </div>
 
               <!-- Row 2: left content | right content -->
               <div class="pt-left-stack">
-                <div v-if="form.productProductTab !== 'campaigns'" class="pt-toolbar">
+                <div v-if="showProductBrowseToolbar" class="pt-toolbar">
                   <div class="toolbar-field match-row">
                     <span class="toolbar-label">Targeting type</span>
-                    <label class="chk"><input v-model="form.productDeliveryType.exact" type="checkbox" /> Exact</label>
-                    <label class="chk"><input v-model="form.productDeliveryType.expanded" type="checkbox" /> Expanded</label>
+                    <label class="chk"><UiCheckbox v-model="form.productDeliveryType.exact" /> Exact</label>
+                    <label class="chk"><UiCheckbox v-model="form.productDeliveryType.expanded" /> Expanded</label>
+                  </div>
+                </div>
+
+                <!-- Enter list（与 Keyword Targeting · Enter list 同构） -->
+                <div v-if="form.productProductTab === 'enter'" class="pt-toolbar">
+                  <div class="toolbar-field">
+                    <span class="toolbar-label">Custom bid</span>
+                    <div class="enter-bid-wrap">
+                      <InlineNumberInput
+                        v-model="productEnterBid"
+                        :step="0.01"
+                        suffix="USD"
+                        size="default"
+                      />
+                    </div>
+                  </div>
+                  <div class="toolbar-field match-row">
+                    <span class="toolbar-label">Targeting type</span>
+                    <label class="chk"><UiCheckbox v-model="form.productDeliveryType.exact" /> Exact</label>
+                    <label class="chk"><UiCheckbox v-model="form.productDeliveryType.expanded" /> Expanded</label>
+                  </div>
+                </div>
+
+                <div v-if="form.productProductTab === 'enter'" class="pt-panel pt-panel--enter">
+                  <textarea
+                    v-model="productEnterListText"
+                    class="enter-textarea"
+                    placeholder="Enter ASIN separated by new line"
+                    rows="10"
+                  />
+                  <div class="enter-bottom-row">
+                    <div class="enter-upload-side">
+                      <input
+                        ref="productEnterFileInput"
+                        type="file"
+                        accept=".txt,.csv,.tsv,.xlsx,.xls,text/plain,text/csv,text/tab-separated-values,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel"
+                        class="enter-file-input-hidden"
+                        @change="onProductEnterListFile"
+                      />
+                      <div class="enter-file-actions">
+                        <button type="button" class="enter-upload-lite" @click="triggerProductEnterFilePick">
+                          Upload file
+                        </button>
+                        <button type="button" class="enter-download-template" @click="downloadProductEnterListTemplate">
+                          <Download class="enter-download-template__icon" :size="14" :stroke-width="2" aria-hidden="true" />
+                          Download the XLSX template
+                        </button>
+                      </div>
+                    </div>
+                    <div class="enter-actions">
+                      <UiButton type="button" size="sm" variant="default" @click="commitProductEnterList">
+                        Add products
+                      </UiButton>
+                    </div>
                   </div>
                 </div>
 
                 <!-- ── Products: suggested ── -->
-                <div v-if="form.productProductTab === 'suggested'" class="pt-panel">
+                <div v-else-if="form.productProductTab === 'suggested'" class="pt-panel">
                   <table class="data-table product-table">
                     <thead>
                       <tr>
                         <th class="col-product">Product</th>
                         <th>Type</th>
                         <th>Suggested bid</th>
-                        <th>Reviews</th>
                         <th class="action-col" aria-label="Action"></th>
                       </tr>
                     </thead>
@@ -250,7 +140,6 @@
                             <span class="sugg-main">{{ p.suggestBid }}</span>
                             <div v-if="p.suggestRange" class="sugg-range">{{ p.suggestRange }}</div>
                           </td>
-                          <td class="muted">{{ p.reviews.toLocaleString() }}</td>
                           <td class="action-col">
                             <button type="button" class="text-add-btn" aria-label="Add product" @click="addProduct(p)">Add</button>
                           </td>
@@ -288,7 +177,6 @@
                               <span class="sugg-main">{{ p.suggestBid }}</span>
                               <div v-if="p.suggestRange" class="sugg-range">{{ p.suggestRange }}</div>
                             </td>
-                            <td class="muted">{{ p.reviews.toLocaleString() }}</td>
                             <td class="action-col">
                               <button
                                 type="button"
@@ -303,7 +191,6 @@
                           <tr class="dual-row dual-row--second">
                             <td>Expanded</td>
                             <td></td>
-                            <td></td>
                             <td class="action-col">
                               <button
                                 type="button"
@@ -316,43 +203,6 @@
                           </tr>
                         </template>
                       </template>
-                    </tbody>
-                  </table>
-                </div>
-
-                <!-- ── Products: library ── -->
-                <div v-else-if="form.productProductTab === 'library'" class="pt-panel">
-                  <table class="data-table product-table">
-                    <thead>
-                      <tr>
-                        <th class="col-product">Product</th>
-                        <th>Type</th>
-                        <th>Suggested bid</th>
-                        <th class="action-col" aria-label="Action"></th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      <tr v-for="p in form.libraryProductAsins" :key="p.id">
-                        <td class="col-product">
-                          <div class="prod-cell">
-                            <div class="prod-thumb">
-                              <img :src="p.image" :alt="p.title" />
-                            </div>
-                            <div class="prod-text">
-                              <p class="cell-title">{{ p.title }}</p>
-                              <p class="cell-meta">{{ p.asin }}</p>
-                            </div>
-                          </div>
-                        </td>
-                        <td>{{ pickDeliveryLabel() }}</td>
-                        <td>
-                          <span class="sugg-main">{{ p.suggestBid }}</span>
-                          <div v-if="p.suggestRange" class="sugg-range">{{ p.suggestRange }}</div>
-                        </td>
-                        <td class="action-col">
-                          <button type="button" class="text-add-btn" aria-label="Add product" @click="addProductFromLibrary(p)">Add</button>
-                        </td>
-                      </tr>
                     </tbody>
                   </table>
                 </div>
@@ -382,6 +232,11 @@
                       </div>
                     </label>
                   </div>
+                  <div class="toolbar-field match-row campaigns-match-row">
+                    <span class="toolbar-label">Match type</span>
+                    <label class="chk"><UiCheckbox v-model="form.productDeliveryType.exact" /> Exact</label>
+                    <label class="chk"><UiCheckbox v-model="form.productDeliveryType.expanded" /> Expanded</label>
+                  </div>
                   <template v-if="!form.productSelectedCampaignId || !form.productSelectedAdGroupId">
                     <div class="empty-block">
                       <div class="empty-illus" aria-hidden="true">
@@ -396,73 +251,114 @@
                     </div>
                   </template>
                   <template v-else>
-                    <table class="data-table product-table">
-                      <thead>
-                        <tr>
-                          <th class="col-product">Product</th>
-                          <th>Source group status</th>
-                          <th>Type</th>
-                          <th>Suggested bid</th>
-                          <th class="action-col" aria-label="Action"></th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        <tr v-for="p in campaignProductRows" :key="p.id">
-                          <td class="col-product">
-                            <div class="prod-cell">
-                              <div class="prod-thumb">
-                                <img :src="p.image" :alt="p.title" />
-                              </div>
-                              <div class="prod-text">
-                                <p class="cell-title">{{ p.title }}</p>
-                                <p class="cell-meta">{{ p.asin }}</p>
-                              </div>
-                            </div>
-                          </td>
-                          <td class="muted">{{ p.sourceStatus }}</td>
-                          <td>{{ pickDeliveryLabel() }}</td>
-                          <td>
-                            <span class="sugg-main">{{ p.suggestBid }}</span>
-                            <div v-if="p.suggestRange" class="sugg-range">{{ p.suggestRange }}</div>
-                          </td>
-                          <td class="action-col">
-                            <button type="button" class="text-add-btn" aria-label="Add product" @click="addProduct(p)">Add</button>
-                          </td>
-                        </tr>
-                      </tbody>
-                    </table>
+                    <div class="campaigns-table-stack">
+                      <div class="campaigns-table-scroll">
+                        <table class="data-table flat product-table">
+                          <thead>
+                            <tr>
+                              <th class="narrow" aria-label="Select rows">
+                                <UiCheckbox
+                                  v-if="campaignProductSelectableRowKeys.length"
+                                  :model-value="campaignProductAllSelectableSelected"
+                                  @update:model-value="onCampaignProductSelectAll"
+                                />
+                              </th>
+                              <th class="col-product">Product</th>
+                              <th>Source group status</th>
+                              <th>Match type</th>
+                              <th>Suggested bid</th>
+                              <th class="action-col">Action</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            <template v-if="campaignProductTableGroups.length === 0">
+                              <tr>
+                                <td colspan="6" class="pt-campaign-empty">
+                                  {{
+                                    campaignProductFilterHasNoTypes
+                                      ? '请至少选择一种 Match type（Exact / Expanded）。'
+                                      : '该广告组下没有可展示的商品定向。'
+                                  }}
+                                </td>
+                              </tr>
+                            </template>
+                            <template v-else>
+                              <template v-for="group in campaignProductTableGroups" :key="group.base.id">
+                                <tr v-for="(line, lineIdx) in group.lines" :key="line.rowKey">
+                                  <td class="narrow">
+                                    <UiCheckbox
+                                      :model-value="!!campaignProductSelected[line.rowKey]"
+                                      :disabled="isProductAdded(group.base.asin, line.deliveryType)"
+                                      @update:model-value="
+                                        (checked) =>
+                                          toggleCampaignProductRow(
+                                            line.rowKey,
+                                            group.base.asin,
+                                            line.deliveryType,
+                                            checked
+                                          )
+                                      "
+                                    />
+                                  </td>
+                                  <td
+                                    v-if="lineIdx === 0"
+                                    :rowspan="group.lines.length"
+                                    class="col-product pt-campaign-prod-td"
+                                  >
+                                    <div class="prod-cell">
+                                      <div class="prod-thumb">
+                                        <img :src="group.base.image" :alt="group.base.title" />
+                                      </div>
+                                      <div class="prod-text">
+                                        <p class="cell-title">{{ group.base.title }}</p>
+                                        <p class="cell-meta">{{ group.base.asin }}</p>
+                                      </div>
+                                    </div>
+                                  </td>
+                                  <td
+                                    v-if="lineIdx === 0"
+                                    :rowspan="group.lines.length"
+                                    class="muted pt-campaign-status-td"
+                                  >
+                                    {{ group.base.sourceStatus }}
+                                  </td>
+                                  <td>{{ line.deliveryType }}</td>
+                                  <td>
+                                    <div class="sugg-main">{{ line.suggestBid }}</div>
+                                    <div v-if="line.suggestRange" class="sugg-range">{{ line.suggestRange }}</div>
+                                  </td>
+                                  <td class="action-col">
+                                    <button
+                                      type="button"
+                                      class="text-add-btn"
+                                      :disabled="isProductAdded(group.base.asin, line.deliveryType)"
+                                      :aria-label="
+                                        isProductAdded(group.base.asin, line.deliveryType)
+                                          ? 'Already added'
+                                          : 'Add product'
+                                      "
+                                      @click="addProductFromCampaignLine(group.base, line)"
+                                    >
+                                      {{ isProductAdded(group.base.asin, line.deliveryType) ? 'Added' : 'Add' }}
+                                    </button>
+                                  </td>
+                                </tr>
+                              </template>
+                            </template>
+                          </tbody>
+                        </table>
+                      </div>
+                      <div v-if="campaignProductSelectedCount > 0" class="campaigns-bulk-actions">
+                        <UiButton type="button" size="sm" variant="default" @click="addSelectedCampaignProductRows">
+                          Add selected
+                        </UiButton>
+                      </div>
+                    </div>
                   </template>
-                </div>
-
-                <!-- ── Products: manual ── -->
-                <div v-else class="pt-panel manual-panel">
-                  <textarea
-                    v-model="manualAsinInput"
-                    class="manual-textarea"
-                    rows="10"
-                    placeholder="Enter ASINs, one per line"
-                  />
-                  <div class="manual-actions">
-                    <button type="button" class="primary-btn" @click="addManualAsins">Add</button>
-                  </div>
                 </div>
               </div>
 
               <div class="pt-right-stack">
-                <!-- toolbar -->
-                <div class="pt-added-toolbar">
-                  <button type="button" class="add-asin-btn" @click="addManualProductRow">
-                    <span class="add-asin-btn__plus" aria-hidden="true">+</span>
-                    Add product
-                  </button>
-                  <button
-                    v-if="productOnlyTargets.length > 0"
-                    type="button"
-                    class="remove-all-text-btn"
-                    @click="removeAllProducts"
-                  >Remove all</button>
-                </div>
-
                 <div v-if="productOnlyTargets.length === 0" class="empty-block tight">
                   <div class="empty-illus" aria-hidden="true">
                     <svg width="56" height="56" viewBox="0 0 56 56" fill="none">
@@ -472,7 +368,7 @@
                     </svg>
                   </div>
                   <p class="empty-text">尚未添加商品</p>
-                  <p class="empty-hint">从左侧选择添加，或点击上方 + Add product 手动输入</p>
+                  <p class="empty-hint">从左侧选择并添加</p>
                 </div>
 
                 <div v-else class="added-table-wrap">
@@ -553,6 +449,147 @@
             </div>
           </section>
 
+          <!-- ═══════════════ Categories Module ═══════════════ -->
+          <section class="pt-module">
+            <div class="pt-module-head">
+              <h3 class="pt-module-title">Categories</h3>
+            </div>
+
+            <div class="pt-shell">
+              <!-- Row 1: tabs | right head -->
+              <div class="pt-tabs-row">
+                <UnderlineTabs v-model="form.productCategoryTab" :items="categorySubTabs" size="lg" />
+              </div>
+              <div class="pt-right-head">
+                <span class="added-title">{{ categoryTargets.length }} added</span>
+                <button
+                  v-if="categoryTargets.length > 0"
+                  type="button"
+                  class="link-btn"
+                  @click="removeAllCategories"
+                >
+                  Remove all
+                </button>
+              </div>
+
+              <!-- Row 2: left content | right content -->
+              <div class="pt-left-stack">
+                <!-- ── Categories: Amazon suggested ── -->
+                <div v-if="form.productCategoryTab === 'suggested'" class="pt-panel">
+                  <table class="data-table">
+                    <thead>
+                      <tr>
+                        <th>Category</th>
+                        <th>Suggested bid</th>
+                        <th class="action-col" aria-label="Action"></th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr v-for="row in suggestedCategories" :key="row.id">
+                        <td>
+                          <p class="cell-title">{{ row.path }}</p>
+                        </td>
+                        <td>
+                          <span class="sugg-main">{{ row.suggestBid }}</span>
+                          <div v-if="row.suggestRange" class="sugg-range">{{ row.suggestRange }}</div>
+                        </td>
+                        <td class="action-col">
+                          <button type="button" class="text-add-btn" aria-label="Add category" @click="addCategory(row)">Add</button>
+                        </td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+
+                <!-- ── Categories: Search（与 Negative · Exclude products 同构） ── -->
+                <div v-else-if="form.productCategoryTab === 'search'" class="pt-panel pt-panel--search">
+                  <div class="pt-search-bar">
+                    <input
+                      v-model="categorySearchQuery"
+                      class="pt-search"
+                      type="text"
+                      placeholder="Search by category name"
+                    />
+                    <button class="pt-search-btn" type="button">Search</button>
+                  </div>
+                  <table v-if="filteredSearchCategories.length > 0" class="data-table">
+                    <thead>
+                      <tr>
+                        <th>Category</th>
+                        <th>Suggested bid</th>
+                        <th class="action-col" aria-label="Action"></th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr v-for="row in filteredSearchCategories" :key="row.id">
+                        <td>
+                          <p class="cell-title">{{ row.path }}</p>
+                        </td>
+                        <td>
+                          <span class="sugg-main">{{ row.suggestBid }}</span>
+                          <div v-if="row.suggestRange" class="sugg-range">{{ row.suggestRange }}</div>
+                        </td>
+                        <td class="action-col">
+                          <button type="button" class="text-add-btn" aria-label="Add category" @click="addCategory(row)">Add</button>
+                        </td>
+                      </tr>
+                    </tbody>
+                  </table>
+                  <p v-else class="pt-search-empty">No categories found.</p>
+                </div>
+              </div>
+
+              <div class="pt-right-stack">
+                <div v-if="categoryTargets.length === 0" class="empty-block tight">
+                  <div class="empty-illus" aria-hidden="true">
+                    <svg width="56" height="56" viewBox="0 0 56 56" fill="none">
+                      <rect x="6" y="10" width="44" height="32" rx="4" stroke="var(--gray-300,#d0d7e2)" stroke-width="1.5" fill="var(--gray-50,#f8fafc)"/>
+                      <path d="M14 26h28M14 33h18" stroke="var(--gray-300,#d0d7e2)" stroke-width="1.5" stroke-linecap="round"/>
+                      <path d="M36 38l6 6M42 38l-6 6" stroke="var(--primary,#1876ff)" stroke-width="1.5" stroke-linecap="round" opacity="0.6"/>
+                    </svg>
+                  </div>
+                  <p class="empty-text">尚未添加分类</p>
+                  <p class="empty-hint">从左侧选择并添加</p>
+                </div>
+
+                <div v-else class="added-table-wrap">
+                  <table class="data-table added-table">
+                    <thead>
+                      <tr>
+                        <th>Category</th>
+                        <th>Bid</th>
+                        <th class="action-col" aria-label="Action"></th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr v-for="row in categoryTargets" :key="row.id">
+                        <td>
+                          <p class="cell-title">{{ row.title }}</p>
+                        </td>
+                        <td>
+                          <span class="bid-input-wrap bid-input-wrap--minimal">
+                            <span class="currency">$</span>
+                            <input
+                              v-model.number="row.bid"
+                              class="bid-input"
+                              type="number"
+                              step="0.01"
+                              min="0"
+                              :placeholder="Number(form.productTargetingDefaultBid).toFixed(2)"
+                            />
+                          </span>
+                        </td>
+                        <td class="action-col">
+                          <button type="button" class="icon-remove" aria-label="Remove" @click="removeAdded(row.id)">×</button>
+                        </td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          </section>
+
         </main>
       </div>
     </div>
@@ -562,15 +599,20 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted, watch, nextTick } from 'vue'
+import { ref, computed, onMounted, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import { storeToRefs } from 'pinia'
 import { useCampaignStore } from '@/stores/campaign'
 import Stepper from '@/components/Stepper.vue'
 import BottomBar from '@/components/BottomBar.vue'
 import UiSelect from '@/components/ui/select/Select.vue'
+import UiButton from '@/components/ui/button/Button.vue'
+import UiCheckbox from '@/components/ui/checkbox/Checkbox.vue'
+import InlineNumberInput from '@/components/base/InlineNumberInput.vue'
 import UnderlineTabs from '@/components/ui/UnderlineTabs.vue'
 import { useFlowSteps } from '@/composables/useFlowSteps'
+import * as XLSX from 'xlsx'
+import { Download } from 'lucide-vue-next'
 
 const router = useRouter()
 const store = useCampaignStore()
@@ -580,6 +622,9 @@ const { steps, getStepNumber, getNextPath, getBackPath } = useFlowSteps()
 onMounted(() => {
   store.form.targeting = 'manual'
   store.form.manualTargetType = 'product'
+  if (store.form.productProductTab === 'manual' || store.form.productProductTab === 'library') {
+    store.form.productProductTab = 'enter'
+  }
 })
 
 const deliveryTypeOptions = [
@@ -588,17 +633,23 @@ const deliveryTypeOptions = [
 ]
 
 const categorySubTabs = [
-  { id: 'campaigns', label: 'Select from campaigns' },
-  { id: 'suggested', label: 'Amazon suggested' }
+  { id: 'suggested', label: 'Amazon suggested' },
+  { id: 'search', label: 'Search' },
 ]
 
 const productSubTabs = [
+  { id: 'enter', label: 'Enter list' },
   { id: 'campaigns', label: 'Select from campaigns' },
-  { id: 'suggested', label: 'Amazon suggested' }
+  { id: 'suggested', label: 'Amazon suggested' },
 ]
 
 const categorySearchQuery = ref('')
-const manualAsinInput = ref('')
+
+const showProductBrowseToolbar = computed(() => form.value.productProductTab === 'suggested')
+
+const productEnterListText = ref('')
+const productEnterFileInput = ref(null)
+const productEnterBid = ref(form.value.productTargetingDefaultBid ?? 0.02)
 
 const suggestedCategories = [
   { id: 'c1', path: 'Home & Garden > Heating, Cooling & Air Quality > Space Heaters', suggestBid: '—', suggestRange: '' },
@@ -651,28 +702,153 @@ watch(
   () => { form.value.productSelectedAdGroupId = '' }
 )
 
-const campaignCategoryRows = computed(() => {
-  if (!form.value.productSelectedCampaignId || !form.value.productSelectedAdGroupId) return []
-  return [
-    { id: 'cc1', path: 'Home & Garden > Space Heaters > Ceramic', sourceStatus: 'Active', status: 'Enabled', suggestBid: '$0.61', suggestRange: '$0.48–$0.78' },
-    { id: 'cc2', path: 'Home & Garden > Fans > Tower Fans', sourceStatus: 'Active', status: 'Enabled', suggestBid: '$0.44', suggestRange: '$0.32–$0.58' }
-  ]
-})
-
 const suggestedProducts = [
   { id: 'p1', asin: 'B08Q6LV5CR', title: 'PureMate 46-inch Tower Fan', image: 'https://m.media-amazon.com/images/I/61e7RvINXUL._AC_SL1500_.jpg', stock: 'In stock', suggestBid: '—', suggestRange: '', originalPrice: '$69.99', price: '$59.49', rating: 4.5, reviews: 3201, matchType: 'exact' },
   { id: 'p2', asin: 'B0C5CV8CTW', title: 'Dreo Ceramic Heater, 2025 Winter Mode', image: 'https://m.media-amazon.com/images/I/81G+4gzszVL._AC_SY879_.jpg', stock: 'In stock', suggestBid: '$1.12', suggestRange: '$0.88–$1.35', originalPrice: '$41.22', price: '$39.25', rating: 4.5, reviews: 16346, matchType: 'expanded' },
   { id: 'p3', asin: 'B09XK2DTVP', title: 'Vornado MVH Vortex Heater', image: 'https://m.media-amazon.com/images/I/71pB9RvWyRL._AC_SL1500_.jpg', stock: 'Out of stock', suggestBid: '$0.98', suggestRange: '$0.72–$1.15', originalPrice: '$59.99', price: '$49.99', rating: 4.4, reviews: 8921, matchType: 'exact' }
 ]
 
+const DISPLAY_PRODUCT_DELIVERY_ORDER = ['Exact', 'Expanded']
+
 const campaignProductRows = computed(() => {
   if (!form.value.productSelectedCampaignId || !form.value.productSelectedAdGroupId) return []
   return suggestedProducts.slice(0, 2).map((p, i) => ({
     ...p,
     id: `cp-${p.asin}-${i}`,
-    sourceStatus: 'Active'
+    sourceStatus: 'Active',
+    suggestByDelivery: {
+      Exact: {
+        bid: p.matchType === 'exact' ? p.suggestBid : '$0.88',
+        range: p.matchType === 'exact' ? (p.suggestRange || '') : '$0.70–$1.05',
+      },
+      Expanded: {
+        bid: p.matchType === 'expanded' ? p.suggestBid : '$0.95',
+        range: p.matchType === 'expanded' ? (p.suggestRange || '') : '$0.78–$1.12',
+      },
+    },
   }))
 })
+
+function deliveryTypesFromToolbar() {
+  const d = form.value.productDeliveryType
+  return DISPLAY_PRODUCT_DELIVERY_ORDER.filter((name) => {
+    if (name === 'Exact') return d.exact
+    return d.expanded
+  })
+}
+
+/** 按 suggestByDelivery 里存在的类型过滤，行顺序同 DISPLAY_PRODUCT_DELIVERY_ORDER */
+function deliveryTypesFromSuggest(suggestByDelivery) {
+  if (!suggestByDelivery || typeof suggestByDelivery !== 'object') return []
+  return DISPLAY_PRODUCT_DELIVERY_ORDER.filter((name) => suggestByDelivery[name] != null)
+}
+
+const campaignProductTableGroups = computed(() => {
+  const toolbarTypes = deliveryTypesFromToolbar()
+  if (!toolbarTypes.length) return []
+  return campaignProductRows.value
+    .map((base) => {
+      const fromData = deliveryTypesFromSuggest(base.suggestByDelivery)
+      const types = fromData.filter((dt) => toolbarTypes.includes(dt))
+      return {
+        base,
+        lines: types.map((dt) => {
+          const s = base.suggestByDelivery[dt]
+          return {
+            rowKey: `${base.id}-${dt}`,
+            deliveryType: dt,
+            suggestBid: s?.bid ?? '—',
+            suggestRange: s?.range ?? '',
+          }
+        }),
+      }
+    })
+    .filter((g) => g.lines.length > 0)
+})
+
+const campaignProductFilterHasNoTypes = computed(
+  () => !form.value.productDeliveryType.exact && !form.value.productDeliveryType.expanded
+)
+
+/** Campaigns 商品表：按行多选（rowKey = baseId-Exact|Expanded） */
+const campaignProductSelected = ref({})
+
+const campaignProductSelectableRowKeys = computed(() => {
+  const keys = []
+  for (const g of campaignProductTableGroups.value) {
+    for (const line of g.lines) {
+      if (!isProductAdded(g.base.asin, line.deliveryType)) keys.push(line.rowKey)
+    }
+  }
+  return keys
+})
+
+const campaignProductSelectedCount = computed(
+  () => Object.keys(campaignProductSelected.value).filter((k) => campaignProductSelected.value[k]).length
+)
+
+const campaignProductAllSelectableSelected = computed(() => {
+  const sel = campaignProductSelectableRowKeys.value
+  if (!sel.length) return false
+  return sel.every((k) => campaignProductSelected.value[k])
+})
+
+function clearCampaignProductRowSelection() {
+  campaignProductSelected.value = {}
+}
+
+function toggleCampaignProductRow(rowKey, asin, deliveryType, checked) {
+  if (isProductAdded(asin, deliveryType)) return
+  const next = { ...campaignProductSelected.value }
+  if (checked) next[rowKey] = true
+  else delete next[rowKey]
+  campaignProductSelected.value = next
+}
+
+function onCampaignProductSelectAll(checked) {
+  if (checked) {
+    const next = { ...campaignProductSelected.value }
+    for (const k of campaignProductSelectableRowKeys.value) next[k] = true
+    campaignProductSelected.value = next
+  } else {
+    campaignProductSelected.value = {}
+  }
+}
+
+function addProductFromCampaignLine(base, line) {
+  addProductWithType(base, line.deliveryType, {
+    suggestBid: line.suggestBid,
+    suggestRange: line.suggestRange,
+  })
+}
+
+function addSelectedCampaignProductRows() {
+  for (const g of campaignProductTableGroups.value) {
+    for (const line of g.lines) {
+      if (!campaignProductSelected.value[line.rowKey]) continue
+      if (isProductAdded(g.base.asin, line.deliveryType)) continue
+      addProductFromCampaignLine(g.base, line)
+    }
+  }
+  clearCampaignProductRowSelection()
+}
+
+watch(
+  () => [
+    form.value.productSelectedCampaignId,
+    form.value.productSelectedAdGroupId,
+    form.value.productDeliveryType.exact,
+    form.value.productDeliveryType.expanded,
+  ],
+  () => clearCampaignProductRowSelection()
+)
+
+watch(
+  () => form.value.productProductTab,
+  (tab) => {
+    if (tab !== 'campaigns') clearCampaignProductRowSelection()
+  }
+)
 
 const categoryTargets = computed(() =>
   form.value.productTargets.filter(t => t.kind === 'category')
@@ -715,8 +891,15 @@ function categoryKey(path) {
   return `cat:${path}`
 }
 
+/** 用于去重 / productKey；展示仍可用文件中的原字符串 */
+function productDedupeKey(asin) {
+  return String(asin ?? '').trim().toUpperCase().replace(/[^A-Z0-9]/g, '')
+}
+
 function productKey(asin, delivery) {
-  return `prod:${asin}:${delivery}`
+  const k = productDedupeKey(asin)
+  const base = k || String(asin ?? '').trim()
+  return `prod:${base}:${delivery}`
 }
 
 function isCategoryAdded(path) {
@@ -769,7 +952,7 @@ function addProduct(p) {
   })
 }
 
-function addProductWithType(p, delivery) {
+function addProductWithType(p, delivery, opts = {}) {
   if (isProductAdded(p.asin, delivery)) return
   const def = form.value.productTargetingDefaultBid
   form.value.productTargets.push({
@@ -781,32 +964,10 @@ function addProductWithType(p, delivery) {
     asin: p.asin,
     image: p.image,
     deliveryType: delivery,
-    suggestBid: p.suggestBid || '—',
-    suggestRange: p.suggestRange || '',
+    suggestBid: opts.suggestBid != null ? opts.suggestBid : (p.suggestBid || '—'),
+    suggestRange: opts.suggestRange != null ? opts.suggestRange : (p.suggestRange || ''),
     bid: def,
     checked: false
-  })
-}
-
-function addManualProductRow() {
-  const id = `pt-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`
-  form.value.productTargets.push({
-    id,
-    kind: 'product',
-    productKey: `prod:manual-${id}:Exact`,
-    title: '',
-    asin: '',
-    image: '',
-    deliveryType: 'Exact',
-    suggestBid: '—',
-    suggestRange: '',
-    bid: form.value.productTargetingDefaultBid,
-    checked: false,
-    manual: true
-  })
-  nextTick(() => {
-    const el = document.getElementById(`added-asin-${id}`)
-    if (el) el.focus()
   })
 }
 
@@ -819,43 +980,111 @@ function commitManualAsin(row) {
   row.manual = false
 }
 
-function addProductFromLibrary(p) {
-  addProduct({
-    id: p.id,
-    asin: p.asin,
-    title: p.title,
-    image: p.image,
-    stock: '—',
-    suggestBid: p.suggestBid,
-    suggestRange: p.suggestRange,
-    price: '—',
-    rating: '—',
-    reviews: 0
+function triggerProductEnterFilePick() {
+  productEnterFileInput.value?.click()
+}
+
+function downloadProductEnterListTemplate() {
+  const ws = XLSX.utils.aoa_to_sheet([['ASIN']])
+  const wb = XLSX.utils.book_new()
+  XLSX.utils.book_append_sheet(wb, ws, 'Products')
+  XLSX.writeFile(wb, 'product-asin-import-template.xlsx')
+}
+
+function normalizeUploadText(raw) {
+  return raw.replace(/^\uFEFF/, '').replace(/\r\n/g, '\n').replace(/\r/g, '\n')
+}
+
+/** Upload file：首列原样保留（不 trim） */
+function workbookFirstColumnLinesRaw(wb) {
+  const sn = wb.SheetNames[0]
+  if (!sn) return ''
+  const ws = wb.Sheets[sn]
+  const rows = XLSX.utils.sheet_to_json(ws, { header: 1, defval: '' })
+  return rows
+    .map(r => String(Array.isArray(r) ? r[0] : ''))
+    .filter(cell => cell.length > 0)
+    .join('\n')
+}
+
+async function onProductEnterListFile(ev) {
+  const input = ev.target
+  const file = input.files?.[0]
+  if (!file) return
+  const lower = file.name.toLowerCase()
+  const type = file.type || ''
+  try {
+    let out = ''
+    const isXlsx =
+      lower.endsWith('.xlsx') ||
+      type === 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+    const isXls = lower.endsWith('.xls') || type === 'application/vnd.ms-excel'
+    const isCsv = lower.endsWith('.csv') || type === 'text/csv'
+    const isTsv = lower.endsWith('.tsv') || type === 'text/tab-separated-values'
+
+    if (isXlsx || isXls) {
+      const buf = await file.arrayBuffer()
+      const wb = XLSX.read(buf, { type: 'array' })
+      out = workbookFirstColumnLinesRaw(wb)
+    } else if (isCsv) {
+      const text = normalizeUploadText(await file.text())
+      const wb = XLSX.read(text, { type: 'string' })
+      out = workbookFirstColumnLinesRaw(wb)
+    } else if (isTsv) {
+      const text = normalizeUploadText(await file.text())
+      out = text
+        .split('\n')
+        .map(line => (line.split('\t')[0] ?? '').replace(/\r$/, ''))
+        .filter(cell => cell.length > 0)
+        .join('\n')
+    } else {
+      out = normalizeUploadText(await file.text())
+    }
+    if (out.trim()) addProductEnterListLines(out, { fromUpload: true })
+  } catch {
+    /* ignore read / parse errors */
+  }
+  input.value = ''
+}
+
+/** 按 Custom bid、勾选的 Targeting type 将多行 ASIN 加入右侧列表 */
+function addProductEnterListLines(sourceText, { fromUpload = false } = {}) {
+  const bid = productEnterBid.value ?? form.value.productTargetingDefaultBid
+  const deliveries = []
+  if (form.value.productDeliveryType.exact) deliveries.push('Exact')
+  if (form.value.productDeliveryType.expanded) deliveries.push('Expanded')
+  if (!deliveries.length) return
+
+  const lines = fromUpload
+    ? normalizeUploadText(sourceText)
+        .split('\n')
+        .map(l => l.replace(/\r$/, ''))
+        .filter(l => l !== '')
+    : sourceText.split('\n').map(l => l.trim().toUpperCase()).filter(Boolean)
+  lines.forEach(asin => {
+    deliveries.forEach(delivery => {
+      if (isProductAdded(asin, delivery)) return
+      form.value.productTargets.push({
+        id: `pt-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
+        kind: 'product',
+        productKey: productKey(asin, delivery),
+        title: `ASIN ${asin}`,
+        subtitle: '',
+        asin,
+        image: '',
+        deliveryType: delivery,
+        suggestBid: '—',
+        suggestRange: '',
+        bid,
+        checked: false,
+      })
+    })
   })
 }
 
-function addManualAsins() {
-  const lines = manualAsinInput.value.split('\n').map(l => l.trim().toUpperCase()).filter(Boolean)
-  const delivery = pickDeliveryTypeForAdd()
-  const def = form.value.productTargetingDefaultBid
-  lines.forEach(asin => {
-    if (isProductAdded(asin, delivery)) return
-    form.value.productTargets.push({
-      id: `pt-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
-      kind: 'product',
-      productKey: productKey(asin, delivery),
-      title: `ASIN ${asin}`,
-      subtitle: '',
-      asin,
-      image: '',
-      deliveryType: delivery,
-      suggestBid: '—',
-      suggestRange: '',
-      bid: def,
-      checked: false
-    })
-  })
-  manualAsinInput.value = ''
+function commitProductEnterList() {
+  addProductEnterListLines(productEnterListText.value, { fromUpload: false })
+  productEnterListText.value = ''
 }
 
 function addAllCategorySource() {
@@ -863,7 +1092,6 @@ function addAllCategorySource() {
   let rows = []
   if (tab === 'suggested') rows = suggestedCategories
   else if (tab === 'search') rows = filteredSearchCategories.value
-  else if (tab === 'campaigns') rows = campaignCategoryRows.value
   rows.forEach(row => addCategory(row))
 }
 
@@ -871,8 +1099,6 @@ function addAllProductSource() {
   const tab = form.value.productProductTab
   if (tab === 'suggested') {
     suggestedProducts.forEach(p => addProduct(p))
-  } else if (tab === 'library') {
-    form.value.libraryProductAsins.forEach(p => addProductFromLibrary(p))
   } else if (tab === 'campaigns') {
     campaignProductRows.value.forEach(p => addProduct(p))
   }
@@ -1008,52 +1234,6 @@ function onNext() { router.push(getNextPath('/product-targeting')) }
   border-right: 1px solid var(--border);
 }
 
-/* Row 2 col 2: right content */
-.pt-added-toolbar {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-  box-sizing: border-box;
-  flex-shrink: 0;
-  min-height: 52px;
-  padding: 14px 20px;
-}
-
-.add-asin-btn {
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-  margin: 0;
-  padding: 0;
-  border: none;
-  background: none;
-  font-family: inherit;
-  font-size: 13px;
-  font-weight: 500;
-  color: var(--primary, #1876ff);
-  cursor: pointer;
-}
-.add-asin-btn:hover { opacity: 0.75; }
-
-.add-asin-btn__plus {
-  font-size: 15px;
-  font-weight: 500;
-  line-height: 1;
-}
-
-.remove-all-text-btn {
-  margin: 0;
-  padding: 0;
-  border: none;
-  background: none;
-  font-family: inherit;
-  font-size: 13px;
-  color: var(--text-sub);
-  cursor: pointer;
-}
-.remove-all-text-btn:hover { color: var(--text-main); }
-
 .added-kw-input {
   width: 100%;
   box-sizing: border-box;
@@ -1067,6 +1247,7 @@ function onNext() { router.push(getNextPath('/product-targeting')) }
 }
 .added-kw-input::placeholder { color: #c0c8d8; }
 
+/* Row 2 col 2: right content */
 .pt-right-stack {
   grid-column: 2;
   grid-row: 2;
@@ -1195,6 +1376,11 @@ function onNext() { router.push(getNextPath('/product-targeting')) }
   gap: 12px;
 }
 
+.enter-bid-wrap {
+  max-width: 220px;
+  width: 100%;
+}
+
 .chk {
   display: inline-flex;
   align-items: center;
@@ -1230,6 +1416,194 @@ function onNext() { router.push(getNextPath('/product-targeting')) }
   padding-top: 18px;
 }
 
+.pt-panel--enter {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.enter-bottom-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+  width: 100%;
+}
+
+.enter-upload-side {
+  position: relative;
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+}
+
+.enter-file-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+}
+
+.enter-file-input-hidden {
+  position: absolute;
+  width: 0;
+  height: 0;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.enter-upload-lite {
+  margin: 0;
+  padding: 6px 10px;
+  border: 1px dashed #c4c9d4;
+  border-radius: 3px;
+  background: var(--gray-50, #f8fafc);
+  color: var(--text-sub, #6b7280);
+  font-size: 12px;
+  font-weight: 500;
+  font-family: inherit;
+  line-height: 1.3;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: border-color 0.15s, color 0.15s, background 0.15s;
+}
+
+.enter-upload-lite:hover {
+  border-color: var(--primary, #1d4ed8);
+  color: var(--primary, #1d4ed8);
+  background: #fff;
+}
+
+.enter-download-template {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin: 0;
+  padding: 4px 2px;
+  border: none;
+  border-radius: 3px;
+  background: transparent;
+  color: var(--text-main, #374151);
+  font-size: 12px;
+  font-weight: 500;
+  font-family: inherit;
+  line-height: 1.3;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: color 0.15s, opacity 0.15s;
+}
+
+.enter-download-template:hover {
+  color: var(--primary, #1d4ed8);
+}
+
+.enter-download-template:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.35);
+}
+
+.enter-download-template__icon {
+  flex-shrink: 0;
+  color: inherit;
+}
+
+.enter-actions {
+  display: flex;
+  justify-content: flex-end;
+  flex-shrink: 0;
+}
+
+.enter-textarea {
+  width: 100%;
+  box-sizing: border-box;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  padding: 10px 12px;
+  font-family: inherit;
+  font-size: var(--text-base, 14px);
+  color: #111;
+  resize: vertical;
+  outline: none;
+  line-height: 1.6;
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+
+.enter-textarea:focus {
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15);
+}
+
+.enter-textarea::placeholder {
+  color: #9ca3af;
+}
+
+.pt-panel--search {
+  padding-top: 0;
+}
+
+/* 与 NegativeTargetingPage · Exclude products 搜索条视觉对齐 */
+.pt-search-bar {
+  display: flex;
+  align-items: center;
+  gap: 0;
+  margin: 0;
+  padding: 16px 0 20px;
+  box-sizing: border-box;
+  flex-shrink: 0;
+}
+
+.pt-search {
+  flex: 1;
+  min-width: 0;
+  height: 36px;
+  border: 1px solid #d0d5dd;
+  border-radius: 3px 0 0 3px;
+  padding: 0 12px;
+  font-size: 14px;
+  font-family: inherit;
+  color: #111;
+  background: #fff;
+  box-sizing: border-box;
+  outline: none;
+  transition: border-color 0.15s;
+}
+
+.pt-search:focus {
+  border-color: #1876ff;
+}
+
+.pt-search::placeholder {
+  color: #b0bac8;
+}
+
+.pt-search-btn {
+  height: 36px;
+  padding: 0 18px;
+  border: 1px solid #1876ff;
+  border-left: none;
+  border-radius: 0 3px 3px 0;
+  background: #1876ff;
+  color: #fff;
+  font-size: 14px;
+  font-weight: 500;
+  font-family: inherit;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background 0.15s;
+}
+
+.pt-search-btn:hover {
+  background: #0f5fd4;
+}
+
+.pt-search-empty {
+  margin: 0 0 14px;
+  font-size: 14px;
+  color: var(--text-sub, #6b7280);
+}
+
 .panel-count {
   margin: 0 0 10px;
   font-size: 13px;
@@ -1259,6 +1633,56 @@ function onNext() { router.push(getNextPath('/product-targeting')) }
   flex-wrap: wrap;
   gap: 16px;
   margin-bottom: 18px;
+}
+
+.campaigns-match-row {
+  flex-wrap: wrap;
+  margin-top: 0;
+  margin-bottom: 18px;
+}
+
+.campaigns-table-stack {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  min-height: 0;
+}
+
+.campaigns-table-scroll {
+  overflow: auto;
+  width: 100%;
+}
+
+.campaigns-bulk-actions {
+  display: flex;
+  justify-content: flex-end;
+  padding-top: 12px;
+  flex-shrink: 0;
+}
+
+.campaigns-table-stack .narrow {
+  width: 40px;
+  text-align: center;
+  vertical-align: middle;
+}
+
+.pt-campaign-empty {
+  padding: 20px 12px;
+  text-align: center;
+  color: var(--text-sub, #6b7280);
+  font-size: 13px;
+}
+
+.pt-campaign-prod-td {
+  vertical-align: top;
+}
+
+.pt-campaign-status-td {
+  vertical-align: middle;
+}
+
+.data-table.flat {
+  margin-top: 0;
 }
 
 .filter-field {
@@ -1377,6 +1801,13 @@ function onNext() { router.push(getNextPath('/product-targeting')) }
   opacity: 0.7;
 }
 
+.text-add-btn:disabled {
+  color: var(--text-sub);
+  cursor: default;
+  opacity: 0.85;
+  pointer-events: none;
+}
+
 .text-add-btn--added {
   color: var(--text-sub);
   cursor: default;
@@ -1475,45 +1906,6 @@ function onNext() { router.push(getNextPath('/product-targeting')) }
   border: 1px solid var(--border);
   border-radius: 4px;
   font-size: 13px;
-}
-
-.manual-panel {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-}
-
-.manual-textarea {
-  width: 100%;
-  min-height: 200px;
-  padding: 12px 14px;
-  border: 1px solid #d0d5dd;
-  border-radius: 6px;
-  font-size: 14px;
-  resize: vertical;
-  font-family: inherit;
-}
-
-.manual-actions {
-  display: flex;
-  justify-content: flex-end;
-}
-
-.primary-btn {
-  height: 40px;
-  padding: 0 20px;
-  background: #1876ff;
-  color: #fff;
-  border: none;
-  border-radius: 4px;
-  font-size: 14px;
-  font-weight: 500;
-  cursor: pointer;
-  font-family: inherit;
-}
-
-.primary-btn:hover {
-  background: #0f5fd4;
 }
 
 /* ── Empty states ── */

@@ -1,0 +1,16 @@
+---
+description: 新 UI 默认复用项目内已有封装组件，避免重复造轮子
+alwaysApply: true
+---
+
+# 组件复用（Vue 前端）
+
+- **新页面 / 新模块的 UI**：默认使用仓库里已有封装，不要手写等价物（尤其是与现有形态一致的控件）。画界面时优先在 `src/components/ui/`、`src/components/base/` 中查找再实现。
+- **金额 / 数字出价**：使用 `@/components/base/InlineNumberInput.vue`（与 Campaign Settings、Auto Targeting 等一致）；单位用 `suffix="USD"` 等与现有页面对齐，不要用「`$` + 原生 `<input type="number">`」另做一套。
+- **下拉选择**：优先 `@/components/ui/select/Select.vue`（`UiSelect`）或 `src/components/ui/` 下已有封装。
+- **主按钮 / 次要按钮**：优先 `@/components/ui/button/Button.vue` 或项目内已统一的按钮样式。
+- **复选框（强制）**
+  - **表单 / 表格 / 与 `<label>` 搭配**：必须使用 `@/components/ui/checkbox/Checkbox.vue`（`UiCheckbox`，`v-model` / `:disabled`）。**禁止**使用浏览器默认外观的可见 `<input type="checkbox">`，**禁止**引入其它组件库的 Checkbox。
+  - **不可在父级内嵌原生 checkbox 的场景**（例如父级为 `<button>`）：使用 `@/components/ui/checkbox/CheckboxIndicator.vue` 保持与库内一致的方框样式，由父级处理点击与 `aria-*`；不得再复制一套方框 CSS。
+  - **缺件时**：若新 UI 需要的控件在 `src/components/ui/` 或 `src/components/base/` 中尚不存在，**不要**在业务页面临时手写或引第三方；应先向维护者说明，在组件库中补齐后再接入。
+- **例外**：若必须自定义，在代码或 PR 里简短说明原因（例如无对应封装、交互与现有组件不兼容）。

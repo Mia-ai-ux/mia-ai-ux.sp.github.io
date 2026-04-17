@@ -40,11 +40,7 @@
               :class="{ selected: isSelected(p.id) }"
               @click="toggleRow(p.id)"
             >
-              <div class="picker-checkbox" :class="{ checked: isSelected(p.id) }" aria-hidden="true">
-                <svg v-if="isSelected(p.id)" width="10" height="10" viewBox="0 0 10 10" fill="none">
-                  <path d="M1.5 5l2.5 2.5 4.5-5" stroke="#fff" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
-                </svg>
-              </div>
+              <CheckboxIndicator :checked="isSelected(p.id)" />
               <div class="picker-product-card">
                 <div class="picker-thumb">
                   <div class="picker-thumb-bg" aria-hidden="true" />
@@ -107,6 +103,7 @@ import {
   DialogClose
 } from 'radix-vue'
 import { X } from 'lucide-vue-next'
+import CheckboxIndicator from '@/components/ui/checkbox/CheckboxIndicator.vue'
 
 const props = defineProps({
   open: { type: Boolean, default: false },
@@ -494,24 +491,6 @@ function onConfirm() {
 
 .picker-asin {
   color: #999;
-}
-
-.picker-checkbox {
-  width: 16px;
-  height: 16px;
-  border-radius: 3px;
-  border: 1px solid #dcdcdc;
-  background: rgba(255, 255, 255, 0.9);
-  flex-shrink: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: background 0.15s, border-color 0.15s;
-}
-
-.picker-checkbox.checked {
-  background: #1876ff;
-  border-color: #1876ff;
 }
 
 .picker-empty {
