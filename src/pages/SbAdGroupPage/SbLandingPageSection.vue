@@ -1,0 +1,244 @@
+<template>
+  <section id="section-sb-landing-page" class="card">
+    <h2>Landing page</h2>
+
+    <!-- ── Store spotlight ── -->
+    <template v-if="form.adFormat === 'store_spotlight'">
+      <div class="lp-option static">
+        <span class="radio-dot checked"><span class="radio-dot-inner" /></span>
+        <div class="lp-option-body">
+          <p class="lp-option-title">Store on Amazon</p>
+          <p class="lp-option-hint">(must have 4 or more pages, each with 1 or more unique products)</p>
+        </div>
+      </div>
+      <div class="store-display">
+        <label class="store-field-label">Choose a Store</label>
+        <div class="store-name-box">DREO</div>
+      </div>
+    </template>
+
+    <!-- ── Video ── -->
+    <template v-else-if="form.adFormat === 'video'">
+      <div class="tip-row">
+        <span class="tip-icon">✦</span>
+        <p class="tip-text">
+          Ads using Brand Stores as Sponsored Brands video landing pages see an average of 68%
+          higher Branded Search Rates compared to those using a Product Detail Page.
+        </p>
+      </div>
+
+      <!-- Store on Amazon -->
+      <label class="radio-line" @click="form.videoLandingType = 'store'">
+        <span class="radio-dot" :class="{ checked: form.videoLandingType === 'store' }">
+          <span v-if="form.videoLandingType === 'store'" class="radio-dot-inner" />
+        </span>
+        <div class="lp-option-body">
+          <p class="lp-option-title">Store on Amazon</p>
+          <p class="lp-option-hint">Video and Store byline link to Brand Store. Product link to product detail pages.</p>
+        </div>
+      </label>
+
+      <Transition name="slide">
+        <div v-if="form.videoLandingType === 'store'" class="store-selects">
+          <div class="store-field">
+            <label class="store-field-label">Choose a Store</label>
+            <div class="store-name-box">DREO</div>
+          </div>
+          <div class="store-field">
+            <label class="store-field-label">Choose a page</label>
+            <UiSelect
+              v-model="form.videoStorePage"
+              size="lg"
+              placeholder="Choose a page"
+              :options="storePageOptions"
+            />
+          </div>
+        </div>
+      </Transition>
+
+      <!-- Product detail page -->
+      <label class="radio-line radio-gap" @click="form.videoLandingType = 'product_detail'">
+        <span class="radio-dot" :class="{ checked: form.videoLandingType === 'product_detail' }">
+          <span v-if="form.videoLandingType === 'product_detail'" class="radio-dot-inner" />
+        </span>
+        <p class="lp-option-title">Product detail page</p>
+      </label>
+    </template>
+  </section>
+</template>
+
+<script setup>
+import { storeToRefs } from 'pinia'
+import { useSbStore } from '@/stores/sb'
+import UiSelect from '@/components/ui/select/Select.vue'
+
+const { form } = storeToRefs(useSbStore())
+
+const storePageOptions = [
+  { value: 'home',       label: 'DREO Home' },
+  { value: 'fans',       label: 'Tower Fans' },
+  { value: 'heaters',    label: 'Space Heaters' },
+  { value: 'purifiers',  label: 'Air Purifiers' },
+  { value: 'coolers',    label: 'Air Coolers' },
+]
+</script>
+
+<style scoped>
+.card {
+  background: var(--bg-card);
+  border-radius: var(--radius-card);
+  padding: 28px 32px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+h2 {
+  margin: 0;
+  font-size: var(--text-2xl, 22px);
+  font-weight: 600;
+  color: var(--text-main);
+}
+
+/* Tip row */
+.tip-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  padding: 10px 14px;
+  background: var(--blue-50, #eff6ff);
+  border-radius: var(--radius-md, 8px);
+}
+
+.tip-icon {
+  flex-shrink: 0;
+  font-size: 14px;
+  color: var(--primary, #0ea5e9);
+  margin-top: 1px;
+}
+
+.tip-text {
+  margin: 0;
+  font-size: var(--text-sm, 13px);
+  color: var(--text-main);
+  line-height: 1.55;
+}
+
+/* Radio rows */
+.radio-line {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  cursor: pointer;
+  user-select: none;
+}
+
+.radio-gap {
+  margin-top: 4px;
+}
+
+.lp-option.static {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+}
+
+.radio-dot {
+  flex-shrink: 0;
+  width: 16px;
+  height: 16px;
+  margin-top: 3px;
+  border-radius: 50%;
+  border: 1.5px solid var(--border-strong);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.15s, border-color 0.15s;
+}
+
+.radio-dot.checked {
+  background: var(--primary);
+  border-color: var(--primary);
+}
+
+.radio-dot-inner {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #fff;
+}
+
+.lp-option-body {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.lp-option-title {
+  margin: 0;
+  font-size: var(--text-base, 14px);
+  font-weight: 600;
+  color: var(--text-main);
+  line-height: 1.4;
+}
+
+.lp-option-hint {
+  margin: 0;
+  font-size: var(--text-sm, 13px);
+  color: var(--text-sub);
+  line-height: 1.5;
+}
+
+/* Store selects / display */
+.store-display {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding-left: 26px;
+}
+
+.store-selects {
+  display: flex;
+  gap: 16px;
+  padding-left: 26px;
+  flex-wrap: wrap;
+}
+
+.store-field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 180px;
+  max-width: 260px;
+  flex: 1;
+}
+
+.store-field-label {
+  font-size: var(--text-base, 14px);
+  font-weight: 500;
+  color: var(--text-main);
+}
+
+.store-name-box {
+  height: 40px;
+  display: flex;
+  align-items: center;
+  padding: 0 14px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md, 8px);
+  font-size: var(--text-base, 14px);
+  color: var(--text-main);
+  background: var(--gray-50, #f8fafc);
+}
+
+.slide-enter-active,
+.slide-leave-active {
+  transition: opacity 0.2s, transform 0.2s;
+}
+
+.slide-enter-from,
+.slide-leave-to {
+  opacity: 0;
+  transform: translateY(-6px);
+}
+</style>

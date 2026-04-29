@@ -5,9 +5,7 @@
       <DialogContent class="picker-content">
         <div class="picker-inner">
           <header class="picker-header">
-            <DialogTitle class="picker-title">
-              Select the products you want to advertise for this ad group
-            </DialogTitle>
+            <DialogTitle class="picker-title">{{ props.title }}</DialogTitle>
             <DialogClose class="picker-close" aria-label="Close">
               <X :size="18" stroke-width="2" />
             </DialogClose>
@@ -110,7 +108,8 @@ const props = defineProps({
   catalog: { type: Array, required: true },
   catalogTotal: { type: Number, required: true },
   /** Product ids currently in the ad group (sync when opening) */
-  initialSelectedIds: { type: Array, default: () => [] }
+  initialSelectedIds: { type: Array, default: () => [] },
+  title: { type: String, default: 'Select the products you want to advertise for this ad group' }
 })
 
 const emit = defineEmits(['update:open', 'confirm'])

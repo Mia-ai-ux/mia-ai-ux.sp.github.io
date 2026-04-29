@@ -2,6 +2,8 @@ import { createRouter, createWebHashHistory } from 'vue-router'
 
 const routes = [
   { path: '/', redirect: '/campaign' },
+
+  // ── SP Routes ──────────────────────────────────────────
   {
     path: '/campaign',
     component: () => import('@/pages/CampaignPage/index.vue'),
@@ -36,6 +38,33 @@ const routes = [
     path: '/ad',
     component: () => import('@/pages/AdPage.vue'),
     meta: { label: 'Targeting' }
+  },
+
+  // ── SB Routes ──────────────────────────────────────────
+  {
+    path: '/sb/campaign',
+    component: () => import('@/pages/SbCampaignPage/index.vue'),
+    meta: { step: 1, label: 'Campaign Plan', type: 'sb' }
+  },
+  {
+    path: '/sb/ad-group',
+    component: () => import('@/pages/SbAdGroupPage/index.vue'),
+    meta: { step: 2, label: 'Ad Group', type: 'sb' }
+  },
+  {
+    path: '/sb/ad',
+    component: () => import('@/pages/SbAdPage/index.vue'),
+    meta: { step: 3, label: 'Ad', type: 'sb' }
+  },
+  {
+    path: '/sb/negative',
+    component: () => import('@/pages/SbNegativePage.vue'),
+    meta: { step: 4, label: 'Negative targeting', type: 'sb' }
+  },
+  {
+    path: '/sb/launch',
+    component: () => import('@/pages/SbLaunchPage.vue'),
+    meta: { step: 5, label: 'Launch campaign', type: 'sb' }
   }
 ]
 
