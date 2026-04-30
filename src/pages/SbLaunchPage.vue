@@ -82,6 +82,10 @@
                   <dt>Targeting</dt>
                   <dd>{{ form.targetingAuto ? 'Automatic' : 'Manual' }}</dd>
                 </div>
+                <div v-if="form.adFormat === 'store_spotlight'" class="kv-item">
+                  <dt>Manual targeting</dt>
+                  <dd>{{ storeSpotlightManualTargetingLabel }}</dd>
+                </div>
               </dl>
             </div>
           </div>
@@ -98,6 +102,10 @@
                   <dt>Headline</dt>
                   <dd>{{ form.headline || '—' }}</dd>
                 </div>
+                <div v-if="form.adFormat === 'store_spotlight'" class="kv-item">
+                  <dt>Ad name</dt>
+                  <dd>{{ form.headline || '—' }}</dd>
+                </div>
                 <div class="kv-item">
                   <dt>Landing page</dt>
                   <dd>{{ landingPageLabel }}</dd>
@@ -106,7 +114,21 @@
                   <dt>Products</dt>
                   <dd>{{ form.products.length }} selected</dd>
                 </div>
+                <div
+                  v-else-if="form.storeSpotlightManualTargetType === 'product'"
+                  class="kv-item"
+                >
+                  <dt>Product targets</dt>
+                  <dd>{{ sbProductTargetProductCount }} products, {{ sbProductTargetCategoryCount }} categories</dd>
+                </div>
                 <div v-if="form.adFormat === 'collections' && form.targetingAuto" class="kv-item">
+                  <dt>Keywords</dt>
+                  <dd>{{ form.keywords.length }} added</dd>
+                </div>
+                <div
+                  v-if="form.adFormat === 'store_spotlight' && form.storeSpotlightManualTargetType === 'keyword'"
+                  class="kv-item"
+                >
                   <dt>Keywords</dt>
                   <dd>{{ form.keywords.length }} added</dd>
                 </div>
@@ -214,6 +236,19 @@ const landingPageLabel = computed(() => {
 const validStorePagesCount = computed(() => {
   return form.value.storePages.filter(p => p.title?.trim() && p.url?.trim()).length
 })
+
+const storeSpotlightManualTargetingLabel = computed(() =>
+  form.value.storeSpotlightManualTargetType === 'keyword'
+    ? 'Keyword targeting'
+    : 'Product targeting'
+)
+
+const sbProductTargetProductCount = computed(() =>
+  form.value.productTargets.filter(t => t.kind === 'product').length
+)
+const sbProductTargetCategoryCount = computed(() =>
+  form.value.productTargets.filter(t => t.kind === 'category').length
+)
 
 function onSubmit() {
   if (launched.value) {

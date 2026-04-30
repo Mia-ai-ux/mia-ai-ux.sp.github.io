@@ -28,10 +28,20 @@ const videoAdSubItems = [
   { label: 'Video',          anchorId: 'section-sb-video' }
 ]
 
-const storeSpotlightAdSubItems = [
-  { label: 'Store',          anchorId: 'section-sb-store' },
-  { label: 'Store pages',    anchorId: 'section-sb-store-pages' }
-]
+function buildStoreSpotlightAdSubItems(form) {
+  const base = [
+    { label: 'Ad name', anchorId: 'section-sb-ss-ad-name' },
+    { label: 'Headline', anchorId: 'section-sb-ss-headline' },
+    { label: 'Brand store pages', anchorId: 'section-sb-ss-store-pages' },
+    { label: 'Brand assets', anchorId: 'section-sb-ss-brand-assets' },
+  ]
+  if (form.storeSpotlightManualTargetType === 'keyword') {
+    base.push({ label: 'Keyword targeting', anchorId: 'section-sb-keyword-targeting' })
+  } else {
+    base.push({ label: 'Product targeting', anchorId: 'section-sb-ss-products' })
+  }
+  return base
+}
 
 const negativeSubItems = [
   { label: 'Negative keyword', anchorId: 'section-negative-keyword' },
@@ -53,7 +63,7 @@ export function useSbFlowSteps() {
         adSubItems = videoAdSubItems
         break
       case 'store_spotlight':
-        adSubItems = storeSpotlightAdSubItems
+        adSubItems = buildStoreSpotlightAdSubItems(form.value)
         break
       case 'collections':
       default:

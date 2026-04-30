@@ -1,9 +1,8 @@
 <template>
-  <section id="section-sb-landing-page" class="card">
-    <h2>Landing page</h2>
-
-    <!-- ── Store spotlight ── -->
-    <template v-if="form.adFormat === 'store_spotlight'">
+  <!-- Store spotlight: landing card + manual targeting must be separate sections (distinct anchors / cards). -->
+  <template v-if="form.adFormat === 'store_spotlight'">
+    <section id="section-sb-landing-page" class="card">
+      <h2>Landing page</h2>
       <div class="lp-option static">
         <span class="radio-dot checked"><span class="radio-dot-inner" /></span>
         <div class="lp-option-body">
@@ -15,11 +14,14 @@
         <label class="store-field-label">Choose a Store</label>
         <div class="store-name-box">DREO</div>
       </div>
-    </template>
+    </section>
+    <SbStoreSpotlightManualTargetingSection />
+  </template>
 
-    <!-- ── Video ── -->
-    <template v-else-if="form.adFormat === 'video'">
-      <div class="tip-row">
+  <section v-else-if="form.adFormat === 'video'" id="section-sb-landing-page" class="card">
+    <h2>Landing page</h2>
+
+    <div class="tip-row">
         <span class="tip-icon">✦</span>
         <p class="tip-text">
           Ads using Brand Stores as Sponsored Brands video landing pages see an average of 68%
@@ -63,7 +65,6 @@
         </span>
         <p class="lp-option-title">Product detail page</p>
       </label>
-    </template>
   </section>
 </template>
 
@@ -71,6 +72,7 @@
 import { storeToRefs } from 'pinia'
 import { useSbStore } from '@/stores/sb'
 import UiSelect from '@/components/ui/select/Select.vue'
+import SbStoreSpotlightManualTargetingSection from './SbStoreSpotlightManualTargetingSection.vue'
 
 const { form } = storeToRefs(useSbStore())
 

@@ -62,6 +62,9 @@ const subItems = computed(() => {
     base.push({ label: 'Collection type', anchorId: 'section-sb-collection-type' })
   } else if (form.value.adFormat === 'store_spotlight' || form.value.adFormat === 'video') {
     base.push({ label: 'Landing page', anchorId: 'section-sb-landing-page' })
+    if (form.value.adFormat === 'store_spotlight') {
+      base.push({ label: 'Manual targeting', anchorId: 'section-sb-store-spotlight-manual-targeting' })
+    }
   }
   return base
 })

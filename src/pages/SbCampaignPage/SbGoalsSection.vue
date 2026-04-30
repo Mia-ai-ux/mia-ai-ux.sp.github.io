@@ -1,14 +1,23 @@
 <template>
   <section id="section-sb-goals" class="card">
-    <h2>
-      Campaign goals
-      <div class="tooltip-wrap">
-        <img :src="iconHelpCircle" alt="" width="16" height="16" class="help-icon-trigger" />
-        <div class="tooltip-bubble">
+    <div class="card-header">
+      <div class="title-group">
+        <h2>
+          Campaign goals
+          <span class="tooltip-wrap">
+            <img :src="iconHelpCircle" alt="" width="16" height="16" class="help-icon-trigger" />
+            <span class="tooltip-bubble">
+              Choose your campaign goal. This affects the landing page options available for your ads.
+            </span>
+          </span>
+        </h2>
+        <p class="title-hint">
           Choose your campaign goal. This affects the landing page options available for your ads.
-        </div>
+        </p>
       </div>
-    </h2>
+    </div>
+
+    <hr />
 
     <div id="field-goals" class="field">
       <div class="goals-options">
@@ -38,8 +47,7 @@ import { useSbStore } from '@/stores/sb'
 import RadioCard from '@/components/base/RadioCard.vue'
 import iconHelpCircle from '@/assets/icon-help-circle.svg'
 
-const store = useSbStore()
-const { form } = storeToRefs(store)
+const { form } = storeToRefs(useSbStore())
 </script>
 
 <style scoped>
@@ -49,9 +57,13 @@ const { form } = storeToRefs(store)
   padding: 28px 32px;
 }
 
-.card h2 {
-  margin: 0 0 4px;
-  font-size: var(--text-lg, 17px);
+.card-header {
+  padding-bottom: 8px;
+}
+
+.title-group h2 {
+  margin: 0;
+  font-size: var(--text-2xl, 22px);
   font-weight: 600;
   color: var(--text-main);
   display: flex;
@@ -59,26 +71,23 @@ const { form } = storeToRefs(store)
   gap: 6px;
 }
 
+.title-hint {
+  margin: 4px 0 0;
+  font-size: var(--text-base, 14px);
+  color: var(--text-sub);
+  line-height: 1.45;
+}
+
+hr {
+  border: 0;
+  border-top: 1px solid var(--border);
+  margin: 0 0 20px;
+}
+
 .field {
   display: flex;
   flex-direction: column;
   gap: 8px;
-}
-
-.label-row {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-}
-
-.label-row label {
-  font-size: var(--text-base, 14px);
-  font-weight: 500;
-  color: var(--text-main);
-}
-
-.required {
-  color: var(--color-error, #d32f2f);
 }
 
 .tooltip-wrap {
@@ -107,6 +116,7 @@ const { form } = storeToRefs(store)
   background: #333;
   color: #fff;
   font-size: 12px;
+  font-weight: 400;
   line-height: 1.5;
   padding: 8px 12px;
   border-radius: 6px;

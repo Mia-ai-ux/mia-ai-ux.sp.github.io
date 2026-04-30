@@ -59,13 +59,22 @@ const subItemsMap = {
     { label: 'Landing page', anchorId: 'section-sb-landing-page' },
     { label: 'Targeting',    anchorId: 'section-sb-ad-targeting' }
   ],
-  store_spotlight: [
-    { label: 'Ad name',            anchorId: 'section-sb-ss-ad-name' },
-    { label: 'Headline',           anchorId: 'section-sb-ss-headline' },
-    { label: 'Brand store pages',  anchorId: 'section-sb-ss-store-pages' },
-    { label: 'Brand assets',       anchorId: 'section-sb-ss-brand-assets' }
-  ]
 }
+
+const storeSpotlightAdNavSubItems = computed(() => {
+  const base = [
+    { label: 'Ad name', anchorId: 'section-sb-ss-ad-name' },
+    { label: 'Headline', anchorId: 'section-sb-ss-headline' },
+    { label: 'Brand store pages', anchorId: 'section-sb-ss-store-pages' },
+    { label: 'Brand assets', anchorId: 'section-sb-ss-brand-assets' },
+  ]
+  if (form.value.storeSpotlightManualTargetType === 'keyword') {
+    base.push({ label: 'Keyword targeting', anchorId: 'section-sb-keyword-targeting' })
+  } else {
+    base.push({ label: 'Product targeting', anchorId: 'section-sb-ss-products' })
+  }
+  return base
+})
 
 const videoSubItems = computed(() => {
   if (form.value.videoLandingType === 'store') {
@@ -82,6 +91,7 @@ const videoSubItems = computed(() => {
 
 const currentSubItems = computed(() => {
   if (form.value.adFormat === 'video') return videoSubItems.value
+  if (form.value.adFormat === 'store_spotlight') return storeSpotlightAdNavSubItems.value
   return subItemsMap[form.value.adFormat] || []
 })
 
@@ -122,6 +132,12 @@ watch(() => form.value.adFormat, () => {
 
 watch(() => form.value.videoLandingType, () => {
   if (form.value.adFormat === 'video') {
+    setTimeout(setupObserver, 100)
+  }
+})
+
+watch(() => form.value.storeSpotlightManualTargetType, () => {
+  if (form.value.adFormat === 'store_spotlight') {
     setTimeout(setupObserver, 100)
   }
 })

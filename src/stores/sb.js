@@ -46,6 +46,9 @@ export const useSbStore = defineStore('sb', () => {
     // Targeting toggle (driver → affects targeting content in Step 3, only for Collections)
     targetingAuto: true,       // true = Automatic, false = Manual
 
+    // Store spotlight (Step 2): same Manual Targeting choice as SP → drives Step 3 modules
+    storeSpotlightManualTargetType: 'keyword', // 'keyword' | 'product'
+
     // Landing page (for Store spotlight + Video, set in Step 2)
     videoLandingType: 'store',  // 'store' | 'product_detail'
     videoStorePage: '',         // selected page id for Video + Store on Amazon
@@ -69,6 +72,15 @@ export const useSbStore = defineStore('sb', () => {
 
     // Product targeting / collections (for Collections + Automatic, optional)
     productCollections: [],    // selected product ASINs for product targeting
+
+    // SP Product targeting parity (Store spotlight + product path; same keys as campaign store slice)
+    productTargets: [],
+    productProductTab: 'enter',
+    productCategoryTab: 'suggested',
+    productTargetingDefaultBid: 0.02,
+    productDeliveryType: { exact: true, expanded: false },
+    productSelectedCampaignId: '',
+    productSelectedAdGroupId: '',
 
     // Store spotlight specific
     storeUrl: '',
@@ -119,6 +131,7 @@ export const useSbStore = defineStore('sb', () => {
       adGroupBid: 0.75,
       adFormat: 'collections',
       targetingAuto: true,
+      storeSpotlightManualTargetType: 'keyword',
       videoLandingType: 'store',
       videoStorePage: '',
       headline: '',
@@ -131,6 +144,13 @@ export const useSbStore = defineStore('sb', () => {
       keywordSelectedAdGroupId: '',
       keywords: [],
       productCollections: [],
+      productTargets: [],
+      productProductTab: 'enter',
+      productCategoryTab: 'suggested',
+      productTargetingDefaultBid: 0.02,
+      productDeliveryType: { exact: true, expanded: false },
+      productSelectedCampaignId: '',
+      productSelectedAdGroupId: '',
       storeUrl: '',
       storePages: [],
       videoFile: null,

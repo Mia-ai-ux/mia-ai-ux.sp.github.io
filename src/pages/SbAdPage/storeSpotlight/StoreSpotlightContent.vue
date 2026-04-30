@@ -167,6 +167,17 @@
 
     </div>
 
+    <template v-if="form.storeSpotlightManualTargetType === 'keyword'">
+      <p v-if="errors.keywords" class="error-msg ss-flow-error">{{ errors.keywords }}</p>
+      <SbKeywordTargetingSection />
+    </template>
+
+    <div v-else id="section-sb-ss-products" class="sb-product-targeting-wrap">
+      <p v-if="errors.productTargeting" class="error-msg ss-flow-error">{{ errors.productTargeting }}</p>
+      <h2 class="sb-pt-page-title">Product targeting</h2>
+      <ProductTargetingPanels :form="form" />
+    </div>
+
   </div>
 </template>
 
@@ -178,6 +189,8 @@ import Draggable from 'vuedraggable'
 import UiInput from '@/components/ui/input/Input.vue'
 import Switch from '@/components/ui/switch/Switch.vue'
 import UiSelect from '@/components/ui/select/Select.vue'
+import SbKeywordTargetingSection from '../shared/SbKeywordTargetingSection.vue'
+import ProductTargetingPanels from '@/components/product-targeting/ProductTargetingPanels.vue'
 
 const { form } = storeToRefs(useSbStore())
 
@@ -210,7 +223,9 @@ const storePages = ref([
 
 const errors = reactive({
   adName: '',
-  headline: ''
+  headline: '',
+  keywords: '',
+  productTargeting: '',
 })
 
 function validate() {
@@ -221,6 +236,24 @@ function validate() {
     errorItems.push({ subItem: 'Ad name', label: 'Ad name', anchorId: 'section-sb-ss-ad-name' })
   } else {
     errors.adName = ''
+  }
+
+  if (form.value.storeSpotlightManualTargetType === 'keyword') {
+    errors.productTargeting = ''
+    if (form.value.keywords.length === 0) {
+      errors.keywords = 'Please add at least one keyword.'
+      errorItems.push({ subItem: 'Keyword targeting', label: 'Keyword targeting', anchorId: 'section-sb-keyword-targeting' })
+    } else {
+      errors.keywords = ''
+    }
+  } else {
+    errors.keywords = ''
+    if (form.value.productTargets.length === 0) {
+      errors.productTargeting = 'Please add at least one product or category target.'
+      errorItems.push({ subItem: 'Product targeting', label: 'Product targeting', anchorId: 'section-sb-ss-products' })
+    } else {
+      errors.productTargeting = ''
+    }
   }
 
   const ok = errorItems.length === 0
@@ -241,6 +274,19 @@ defineExpose({ validate })
   display: flex;
   flex-direction: column;
   gap: 16px;
+}
+
+.sb-product-targeting-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.sb-pt-page-title {
+  margin: 0;
+  font-size: var(--text-3xl, 28px);
+  font-weight: 700;
+  color: var(--text-main);
 }
 
 .store-spotlight-layout {
